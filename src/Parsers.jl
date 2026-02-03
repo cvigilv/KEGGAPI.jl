@@ -1,4 +1,3 @@
-
 function tuple_parser(response_text::String, url::String)
     # Split the response into lines
     lines = split(response_text, "\n")
@@ -60,7 +59,6 @@ function organism_parser(response_text::String, url::String)
     kegg_data_list = KeggOrganismList(url, colnames, [tnumber, organism, species, phylogeny])
     return kegg_data_list
 end
-
 
 
 function conv_parser(response_text::String, url::String)
