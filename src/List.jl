@@ -1,4 +1,3 @@
-
 """
 KEGGAPI.list(database)
 
@@ -17,7 +16,7 @@ function list(query::String, query_type::String = "")
     url = "https://rest.kegg.jp/list/$query"
 
     # Check if the requested 'list' is a "pathway" database.
-    if  query == "organism"
+    if query == "organism"
         # Make the API request and get the response as text.
         response_text = request(url)
         # If the 'list' is "organism," call the organism_parser function to parse the response.
@@ -27,7 +26,7 @@ function list(query::String, query_type::String = "")
         response_text = request(url)
         # If the 'list' is "genes," call the genes_parser function to parse the response.
         kegg_data = genomic_feature_parser(response_text, url)
-    else 
+    else
         # Make the API request and get the response as text.
         response_text = request(url)
         # Return an empty array.

@@ -1,4 +1,3 @@
-
 """
 KEGGAPI.conv(<target_db>, <source_db>)
 
@@ -15,12 +14,11 @@ function link(target_db::String, source_db::String)
     # Define the URL for the API request.
     url = "https://rest.kegg.jp/link/$target_db/$source_db"
     response_text = request(url)
-    kegg_data = 
+    kegg_data =
         conv_parser(
-            response_text, 
-            url
-            )
-    # return the arrays 
+        response_text,
+        url
+    )
+    # return the arrays
     return kegg_data
 end
-

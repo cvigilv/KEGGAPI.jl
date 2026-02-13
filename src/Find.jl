@@ -1,4 +1,3 @@
-
 """
 KEGGAPI.find(database, query) -> KeggTupleList
 
@@ -10,10 +9,10 @@ KEGGAPI.find("compound","glucose")
 ```
 """
 function find(database::String, query::String, option::String = "")
-# This function retrieves a list of entries from a specific database from the KEGG API.
+    # This function retrieves a list of entries from a specific database from the KEGG API.
     query = replace(query, " " => "+")
     # Check if the requested database is a "pathway" database
-    if database in ["pathway","genes", "module", "orthology", "disease", "brite"]
+    if database in ["pathway", "genes", "module", "orthology", "disease", "brite"]
         if option != ""
             throw(ArgumentError("The option argument is not available for pathway and genes databases"))
         end
@@ -34,7 +33,7 @@ function find(database::String, query::String, option::String = "")
         # If the database is not a pathway database, print a message indicating that the requested list is not available
         print("The find route you are looking for is not available")
         # Return an empty array
-        kegg_data = [] 
+        kegg_data = []
     end
     # Return the parsed data or an empty array if not available
     return kegg_data
