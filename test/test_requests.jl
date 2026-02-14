@@ -1,8 +1,8 @@
 using KEGGAPI
 using Test
 
-@testset verbose=true "Requests" begin
-    @testset "KEGGAPI.request" begin
+@testset verbose=true "API" begin
+    @testset "request" begin
         # Test successful request to known working endpoint
         result = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
         @test isa(result, String)
@@ -22,69 +22,106 @@ using Test
         @test length(image_data) > 0
     end
 
-    @testset "KEGGAPI.info" begin
-        kegg_info = KEGGAPI.info("kegg")
+    @testset "info" begin
+        kegg_info = KEGGAPI.kegg_info("kegg")
         @test isa(kegg_info, String)
         @test length(kegg_info) > 0
         @test contains(lowercase(kegg_info), "kegg")
-        @test_throws KEGGAPI.RequestError KEGGAPI.info("fail")
-        sleep(0.1)
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_info("fail")
+        sleep(0.4)
     end
 
-    @testset "KEGGAPI.list" begin
-        kegg_pathways = KEGGAPI.list("pathway")
+    @testset "list" begin
+        kegg_pathways = KEGGAPI.kegg_list("pathway")
         @test isa(kegg_pathways, KEGGAPI.KeggTupleList)
         @test length(kegg_pathways.data) > 0
-        @test_throws KEGGAPI.RequestError KEGGAPI.list("fail")
-        sleep(0.1)
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_list("fail")
+        sleep(0.4)
     end
 
-    @testset "KEGGAPI.find" begin
-        kegg_find_pathway = KEGGAPI.find("pathway", "glycolysis")
+    @testset "find" begin
+        kegg_find_pathway = KEGGAPI.kegg_find("pathway", "glycolysis")
         @test isa(kegg_find_pathway, KEGGAPI.KeggTupleList)
         @test length(kegg_find_pathway.data) > 0
-        sleep(0.1)
+        sleep(0.4)
 
-        kegg_find_compound = KEGGAPI.find("compound", "glucose")
+        kegg_find_compound = KEGGAPI.kegg_find("compound", "glucose")
         @test isa(kegg_find_compound, KEGGAPI.KeggTupleList)
         @test length(kegg_find_compound.data) > 0
-        sleep(0.1)
+        sleep(0.4)
 
-        kegg_find_genes = KEGGAPI.find("genes", "glycolysis")
+        kegg_find_genes = KEGGAPI.kegg_find("genes", "glycolysis")
         @test isa(kegg_find_genes, KEGGAPI.KeggTupleList)
         @test length(kegg_find_genes.data) > 0
-        sleep(0.1)
+        sleep(0.4)
     end
 
-    @testset "KEGGAPI.conv" begin
-        kegg_conv = KEGGAPI.conv("eco", "ncbi-geneid")
+    @testset "conv" begin
+        kegg_conv = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
         @test isa(kegg_conv, KEGGAPI.KeggTupleList)
         @test length(kegg_conv.data) > 0
-        sleep(0.1)
+        sleep(0.4)
     end
 
-    @testset "KEGGAPI.link" begin
-        kegg_link = KEGGAPI.link("pathway", "hsa")
+    @testset "link" begin
+        kegg_link = KEGGAPI.kegg_link("pathway", "hsa")
         @test isa(kegg_link, KEGGAPI.KeggTupleList)
         @test length(kegg_link.data) > 0
-        sleep(0.1)
+        sleep(0.4)
     end
 
-    @testset "KEGGAPI.get_image" begin
-        kegg_image = KEGGAPI.get_image("hsa00010")
-        @test isa(kegg_image, Vector)
-        @test length(kegg_image) > 0
-        @test_throws KEGGAPI.RequestError KEGGAPI.get_image("fail")
-        sleep(0.1)
-    end
+    @testset "get" begin
+        # Basic request
+        r = KEGGAPI.kegg_get(["hsa00010", "hsa00020"])
+        @test isa(r, NamedTuple)
+        @test length(r) == 2
+        @test keys(r) == (:url, :data)
+        @test length(r.url) == 1
+        @test length(r.data) == 2
+        sleep(0.4)
 
-    @testset "KEGGAPI.save_image" begin
-        file_name = "test_image.png"
-        kegg_image = KEGGAPI.get_image("hsa00010")
-        KEGGAPI.save_image(kegg_image, file_name)
-        @test isfile(file_name)
-        @test filesize(file_name) > 0
-        rm(file_name, force = true)
-        sleep(0.1)
+        # More than 10 entries
+        dbentries = ["map01100", "map01110", "map01120", "map01200", "map01210", "map01212", "map01230", "map01232", "map01250", "map01240", "map01220", "map01310", "map01320"]
+        r = KEGGAPI.kegg_get(dbentries)
+        @test isa(r, NamedTuple)
+        @test length(r) == 2
+        @test keys(r) == (:url, :data)
+        @test length(r.url) == ceil(Int, length(dbentries) / 10)
+        @test length(r.data) == length(dbentries)
+        @test all(isa.(r.data, String))
+        sleep(0.4)
+
+        # Single request
+        r = KEGGAPI.kegg_get("hsa00010")
+        @test isa(r, NamedTuple)
+        @test length(r) == 2
+        @test keys(r) == (:url, :data)
+        @test isa(r.url, String)
+        @test isa(r.data, String)
+        sleep(0.4)
+
+        # Biological sequence request
+        r = KEGGAPI.kegg_get("hsa:10458", :aaseq)
+        @test isa(r, NamedTuple)
+        @test length(r) == 2
+        @test keys(r) == (:url, :data)
+        @test isa(r.url, String)
+        @test isa(r.data, String)
+        @test startswith(r.data, ">")
+        sleep(0.4)
+
+        # Image request
+        r = KEGGAPI.kegg_get("map00010", :image)
+        @test isa(r, NamedTuple)
+        @test length(r) == 2
+        @test keys(r) == (:url, :data)
+        @test isa(r.url, String)
+        @test isa(r.data, Vector)
+        sleep(0.4)
+        @test_warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry" KEGGAPI.kegg_get(["map00010", "map01110"], :image)
+        @test_warn "Setting timeout to less than 0.4 seconds may lead to API rate limit errors. Consider increasing the timeout to avoid this issue." KEGGAPI.kegg_get("map00010"; timeout=0.1)
+
+        # Invalid option
+        @test_throws ArgumentError KEGGAPI.kegg_get("map00010", :foo)
     end
 end

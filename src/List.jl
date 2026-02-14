@@ -9,7 +9,7 @@ Example:
 KEGGAPI.list("pathway")
 ```
 """
-function list(query::String, query_type::String = "")
+function kegg_list(query::String, query_type::String = "")
     # This function retrieves a list of entries from a specific database from the KEGG API.
 
     # Define the URL for the API request based on the provided 'list' argument.

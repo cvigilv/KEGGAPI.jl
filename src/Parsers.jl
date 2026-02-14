@@ -60,7 +60,6 @@ function organism_parser(response_text::String, url::String)
     return kegg_data_list
 end
 
-
 function conv_parser(response_text::String, url::String)
     # Split the response into lines
     lines = split(response_text, "\n")
@@ -79,7 +78,6 @@ function conv_parser(response_text::String, url::String)
     kegg_data_list = KeggTupleList(url, colnames, [target_ids, source_ids])
     return kegg_data_list
 end
-
 
 function genomic_feature_parser(response_text::String, url::String)
     # Split the response into lines

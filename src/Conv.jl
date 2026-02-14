@@ -13,7 +13,7 @@ KEGGAPI.conv("ncbi-proteinid", "hsa:10458+ece:Z5100")
 KEGGAPI.conv("genes", "ncbi-geneid:948364")
 ```
 """
-function conv(target_db::String, source_db::String)
+function kegg_conv(target_db::String, source_db::String)
     # This function retrieves a list of entries from a specific database from the KEGG API.
     # Define the URL for the API request.
     url = "https://rest.kegg.jp/conv/$target_db/$source_db"

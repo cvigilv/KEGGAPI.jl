@@ -8,7 +8,7 @@ using KEGGAPI
 KEGGAPI.find("compound","glucose")
 ```
 """
-function find(database::String, query::String, option::String = "")
+function kegg_find(database::String, query::String, option::String = "")
     # This function retrieves a list of entries from a specific database from the KEGG API.
     query = replace(query, " " => "+")
     # Check if the requested database is a "pathway" database

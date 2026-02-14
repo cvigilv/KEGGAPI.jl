@@ -9,7 +9,7 @@ Example:
 KEGGAPI.link("pathway", "hsa")
 ```
 """
-function link(target_db::String, source_db::String)
+function kegg_link(target_db::String, source_db::String)
     # This function retrieves a list of entries from a specific database from the KEGG API.
     # Define the URL for the API request.
     url = "https://rest.kegg.jp/link/$target_db/$source_db"

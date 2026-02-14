@@ -1,133 +1,158 @@
-"""
-KEGGAPI.get(query, option) -> Vector
+# ---------------------------------------------------------------------------- Constants
+const KEGGAPI_GET_OPTIONS = Union{Symbol, Nothing}[
+    :aaseq,
+    :ntseq,
+    :mol,
+    :kcf,
+    :image,
+    :conf,
+    :kgml,
+    :json,
+    nothing
+]
 
-Get entries from across the KEGG database. The get function takes a vector of strings
-and returns a vector containing the urls used and the data returned.
+validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
 
-The get function will split the vector into groups of 10 and make a request for each chunk.
+# ---------------------------------------------------------------------------- Helpers
+function chunk_vector(vec::Vector, chunk_size::Int)
+    return [vec[i:min(i + chunk_size - 1, end)] for i in 1:chunk_size:length(vec)]
+end
 
-# Examples
-```@example
-using KEGGAPI
-kegg_get_genes = 
-    KEGGAPI.kegg_get(
-        ["hsa:10458", "hsa:10458", "hsa:10458", "hsa:10458"], 
-        "ntseq"
-        );
-first(kegg_get_genes)
-kegg_get_compounds = 
-KEGGAPI.kegg_get(
-    ["C01290","G00092"]
-    );
-first(kegg_get_compounds)
-```
-"""
-function kegg_get(query::Vector{String}, option::String = "")
-    # This function retrieves a list of entries from a specific database from the KEGG API.
+function build_kegg_url(chunk::Vector{String}, option)
+    chunk_query = join(chunk, "+")
+    option_str = isnothing(option) ? "" : "/$option"
+    return "https://rest.kegg.jp/get/$chunk_query$option_str"
+end
 
-    # Set the chunk size for processing multiple elements in each request
-    chunk_size = 10
+# ---------------------------------------------------------------------------- Parsers
+function parse_as_bioseq(response_text::String)
+    return [">" * strip(d) for d in split(response_text, r"(\n>|^>)")[2:end]]
+end
 
-    # Calculate the number of chunks needed to process all elements in the query
-    query_elements = length(query)
-    query_chunks = ceil(Int, query_elements / chunk_size)
+function parse_as_mol(response_text::String)
+    return [d for d in split(response_text, r"\$\$\$\$")[begin:(end - 1)]] .|> String
+end
 
-    # Initialize arrays to store URLs and retrieved data
-    urls = String[]
-    data = String[]
+function parse_as_text(response_text::String)
+    response_text2 = replace(response_text, r"\n///([^/]*)$" => "")
+    return split(response_text2, "\n///\n") .|> strip .|> String
+end
 
-    # Check if the option is "aaseq" or "ntseq"
-    if option == "aaseq" || option == "ntseq"
-        # If there are more than 10 queries, process in chunks
-        if length(query) > 10
-            for i in 1:query_chunks
-                # Calculate start and end indices for the current chunk
-                start_index = (i - 1) * chunk_size + 1
-                end_index = min(i * chunk_size, query_elements)
+function parse_as_image(response_text::Vector)
+    return UInt8.(response_text)
+end
 
-                # Extract the current chunk of queries
-                chunk = query[start_index:end_index]
+RESPONSE_PROCESSORS = Dict(
+    :aaseq => parse_as_bioseq,
+    :ntseq => parse_as_bioseq,
+    :mol => parse_as_mol,
+    :default => parse_as_text,
+    :image => parse_as_image
+)
 
-                # Join the queries with "+" for URL construction
-                chunk_query = join(chunk, "+")
-
-                # Construct the URL for the API request
-                url = "https://rest.kegg.jp/get/$chunk_query/$option"
-
-                # Store the URL for reference
-                push!(urls, url)
-
-                # Request data from the URL
-                response_text = request(url)
-
-                # Process the response and extract data
-                for datum in split(response_text, r"(\n>|^>)")[2:end]
-                    datum = replace(datum, r"\n$" => "")
-                    push!(data, ">" * datum)
-                end
-
-                # Introduce a delay before the next request
-                sleep(0.1)
-            end
-        else
-            # Process all queries without chunking
-            chunk_query = join(query, "+")
-            url = "https://rest.kegg.jp/get/$chunk_query/$option"
-            response_text = request(url)
-            push!(urls, url)
-            for datum in split(response_text, r"(\n>|^>)")[2:end]
-                datum = replace(datum, r"\n$" => "")
-                push!(data, ">" * datum)
-            end
-        end
+# HACK: this is a workaround as get(option::Symbol, lookup::Dict{Symbol, Function},
+# default::Function) is not supported. This should change once it's supported.
+function get_response_processor(option::Symbol)
+    if haskey(RESPONSE_PROCESSORS, option)
+        return RESPONSE_PROCESSORS[option]
     else
-        # Process non-"aaseq" and non-"ntseq" options
-        if length(query) > 10
-            for i in 1:query_chunks
-                # Calculate start and end indices for the current chunk
-                start_index = (i - 1) * chunk_size + 1
-                end_index = min(i * chunk_size, query_elements)
+        return RESPONSE_PROCESSORS[:default]
+    end
+end
 
-                # Extract the current chunk of queries
-                chunk = query[start_index:end_index]
+function get_response_processor(option::Nothing)
+    return RESPONSE_PROCESSORS[:default]
+end
 
-                # Join the queries with "+" for URL construction
-                chunk_query = join(chunk, "+")
+# ---------------------------------------------------------------------------- Main function
+"""
+    kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; timeout::Float64 = 0.4)
+    kegg_get(dbentry::String, args...; kwargs...)
 
-                # Construct the URL for the API request
-                url = "https://rest.kegg.jp/get/$chunk_query/$option"
+Retrieve given database entries.
 
-                # Store the URL for reference
-                push!(urls, url)
+Allowed `dbentries` (database entries):
 
-                # Request data from the URL
-                response_text = request(url)
+```txt
+pathway   | brite   | module   | ko     | <org>    | vg         | vp      |
+ag        | genome  | compound | glycan | reaction | rclass     | enzyme  |
+network   | variant | disease  | drug   | dgroup   | disease_ja | drug_ja |
+dgroup_ja | compound_ja
+```
 
-                # Process the response and extract data
-                response_text2 = replace(response_text, r"\n///([^/]*)$" => "")
-                for datum in split(response_text2, "\n///\n")
-                    push!(data, datum)
-                end
+Allowed `option` for retrieval of selected fields:
 
-                # Introduce a delay before the next request
-                sleep(0.1)
-            end
-        else
-            # Process all queries without chunking
-            chunk_query = join(query, "+")
-            url = "https://rest.kegg.jp/get/$chunk_query/$option"
-            response_text = request(url)
-            push!(urls, url)
-            response_text2 = replace(response_text, r"\n///([^/]*)$" => "")
-            for datum in split(response_text2, "\n///\n")
-                push!(data, datum)
-            end
+    :aaseq | :ntseq | :mol | :kcf | :image | :conf | :kgml | :json | nothing
+
+# Arguments
+- `dbentries::Vector{String}`: A vector of KEGG database entries to retrieve.
+- `option::Union{Symbol, Nothing}`: An optional symbol specifying the format of the
+  retrieved data. If `nothing`, the default format is used.
+- `timeout::Float64`: A float specifying the time to wait between API requests when retrieving
+  more than 10 entries. Default is 0.4 seconds.
+
+# Returns
+A tuple containing:
+- `url::Vector{String}`: A vector of URLs used for the API requests.
+- `data::Vector{Any}`: A vector of retrieved data corresponding to the provided database
+  entries, processed according to the specified `option`.
+
+# Example
+```julia-repl
+dbentries = ["hsa:10458", "hsa:10459", "hsa:10460"]
+option = :aaseq
+urls, data = kegg_get(dbentries, option)
+```
+
+# Extended help
+
+This operation retrieves given database entries in a flat file format or in other
+formats with `option`. Flat file formats are available for all KEGG databases
+except brite. The input is limited up to 10 entries; if more are provided the
+query will be split into chunks of 10 entries and multiple requests will be made
+with a `timeout` between each request (KEGG API indicates that the maximum API
+calls per seconds is 3, so a default timeout of 0.4 seconds is set to ensure that).
+
+Options allow retrieval of selected fields, including sequence data from genes
+entries, chemical structure data or GIF image files from compound, glycan and
+drug entries, PNG image files or KGML files from pathway entries. 
+
+The input is limited to **one compound/glycan/drug entry with the `:image` option**, 
+and to **one pathway entry with the `:image` or `:kgml` option**.
+
+# Reference
+
+- https://www.kegg.jp/kegg/rest/keggapi.html#get
+
+"""
+function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; timeout::Float64 = 0.4)
+    validate_get_option(option)
+    timeout < 0.334 && @warn "Setting timeout to less than 0.4 seconds may lead to API rate limit errors. Consider increasing the timeout to avoid this issue."
+    length(dbentries) > 1 && option == :image && @warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry"
+
+    urls = String[]
+    data = []
+    processor = get_response_processor(option)
+
+    for chunk in chunk_vector(dbentries, 10)
+        url = build_kegg_url(chunk, option)
+        push!(urls, url)
+        response_text = option == :image ? request_other(url) : request(url)
+        for datum in processor(response_text)
+            push!(data, datum)
         end
+        sleep(timeout)
     end
 
-    # Combine URLs and data into a single array
-    kegg_data = [urls, data]
+    return (url = urls, data = data)
+end
 
-    # Return the parsed data or an empty array if not available
-    return kegg_data
+function kegg_get(dbentry::String, args...; kwargs...) 
+    r = kegg_get([dbentry], args...; kwargs...)
+    if length(args) > 0 && args[1] == :image
+        d = r.data
+    else
+        d = only(r.data)
+    end
+    return (url = only(r.url), data = d)
 end

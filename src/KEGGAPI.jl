@@ -2,7 +2,7 @@ module KEGGAPI
 
 import HTTP: get
 
-export request, info, list, find, get_image, kegg_get, conv, link, save_image
+export request, kegg_info, kegg_list, kegg_find, kegg_get, kegg_conv, kegg_link
 
 include("Structures.jl")
 include("Parsers.jl")
@@ -13,7 +13,6 @@ include("Link.jl")
 include("Get.jl")
 include("Requests.jl")
 include("Info.jl")
-include("Images.jl")
 
 
 precompile(request, (String,))

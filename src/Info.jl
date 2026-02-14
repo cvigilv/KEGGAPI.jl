@@ -9,7 +9,7 @@ Example:
 KEGGAPI.info("kegg")
 ```
 """
-function info(database::String)
+function kegg_info(database::String)
     # function to retrieve information about a specific database from the KEGG API.
     # Define the URL for the API request.
     url = "https://rest.kegg.jp/info/$database"
