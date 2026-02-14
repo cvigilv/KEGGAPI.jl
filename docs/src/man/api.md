@@ -1,4 +1,4 @@
-# KEGGAPI.jl Functions
+# API reference
 
 ```@autodocs
 Modules = [KEGGAPI]
