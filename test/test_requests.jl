@@ -100,6 +100,11 @@ using Test
         @test isa(r.data, String)
         sleep(0.4)
 
+        # Single request via macro
+        r == KEGGAPI.kegg"hsa00010"
+        sleep(0.4)
+
+
         # Biological sequence request
         r = KEGGAPI.kegg_get("hsa:10458", :aaseq)
         @test isa(r, NamedTuple)

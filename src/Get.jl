@@ -18,7 +18,7 @@ function chunk_vector(vec::Vector, chunk_size::Int)
     return [vec[i:min(i + chunk_size - 1, end)] for i in 1:chunk_size:length(vec)]
 end
 
-function build_kegg_url(chunk::Vector{String}, option)
+function build_kegg_url(chunk::Vector{String}, option::Union{Symbol, Nothing})
     chunk_query = join(chunk, "+")
     option_str = isnothing(option) ? "" : "/$option"
     return "https://rest.kegg.jp/get/$chunk_query$option_str"
@@ -155,4 +155,23 @@ function kegg_get(dbentry::String, args...; kwargs...)
         d = only(r.data)
     end
     return (url = only(r.url), data = d)
+end
+
+"""
+    @kegg_str
+
+Macro to retrieve a KEGG database entry flat file from a string.
+
+See [`kegg_get`](@ref) for more details on allowed database entries.
+
+# Example
+```julia
+using KEGGAPI
+entry = kegg"hsa:10458"
+```
+"""
+macro kegg_str(dbentry)
+    quote
+        kegg_get($dbentry)
+    end
 end

@@ -2,7 +2,7 @@ module KEGGAPI
 
 import HTTP: get
 
-export request, kegg_info, kegg_list, kegg_find, kegg_get, kegg_conv, kegg_link
+export request, kegg_info, kegg_list, kegg_find, kegg_get, kegg_conv, kegg_link, @kegg_str
 
 include("Structures.jl")
 include("Parsers.jl")
