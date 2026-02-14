@@ -19,7 +19,7 @@ using KEGGAPI
 
 And use the interfaces to query the KEGG API. For example, to list all organisms in KEGG:
 ```@example examples
-result = KEGGAPI.list("organism");
+result = KEGGAPI.kegg_list("organism");
 ```
 This returns a `KeggOrganismList` object with the API call, column names and data. The data can
 accessed by indexing into the respective fields of the object:
