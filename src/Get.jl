@@ -8,7 +8,7 @@ const KEGGAPI_GET_OPTIONS = Union{Symbol, Nothing}[
     :conf,
     :kgml,
     :json,
-    nothing
+    nothing,
 ]
 
 validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
@@ -115,9 +115,9 @@ calls per seconds is 3, so a default timeout of 0.4 seconds is set to ensure tha
 
 Options allow retrieval of selected fields, including sequence data from genes
 entries, chemical structure data or GIF image files from compound, glycan and
-drug entries, PNG image files or KGML files from pathway entries. 
+drug entries, PNG image files or KGML files from pathway entries.
 
-The input is limited to **one compound/glycan/drug entry with the `:image` option**, 
+The input is limited to **one compound/glycan/drug entry with the `:image` option**,
 and to **one pathway entry with the `:image` or `:kgml` option**.
 
 # Reference
@@ -147,7 +147,7 @@ function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = no
     return (url = urls, data = data)
 end
 
-function kegg_get(dbentry::String, args...; kwargs...) 
+function kegg_get(dbentry::String, args...; kwargs...)
     r = kegg_get([dbentry], args...; kwargs...)
     if length(args) > 0 && args[1] == :image
         d = r.data
@@ -160,7 +160,8 @@ end
 """
     @kegg_str
 
-Macro to retrieve a KEGG database entry flat file from a string.
+Macro to retrieve a KEGG database entry flat file from a string. This is intended
+for interactive use in the REPL.
 
 See [`kegg_get`](@ref) for more details on allowed database entries.
 
@@ -171,7 +172,7 @@ entry = kegg"hsa:10458"
 ```
 """
 macro kegg_str(dbentry)
-    quote
+    return quote
         kegg_get($dbentry)
     end
 end
