@@ -20,14 +20,22 @@ using Test
         image_data = KEGGAPI.request_other("https://rest.kegg.jp/get/hsa00010/image")
         @test isa(image_data, Vector)
         @test length(image_data) > 0
+        sleep(0.4)
     end
 
     @testset "info" begin
-        kegg_info = KEGGAPI.kegg_info("kegg")
-        @test isa(kegg_info, String)
-        @test length(kegg_info) > 0
-        @test contains(lowercase(kegg_info), "kegg")
+        r = KEGGAPI.kegg_info("kegg")
+
+        # Test that the response is a non-empty string containing "kegg"
+        @test isa(r, String)
+        @test length(r) > 0
+        @test contains(lowercase(r), "kegg")
+
+        # Test that requesting info for an invalid database throws an error
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_info("fail")
+
+        # Test that requesting info with a non-symbol argument throws a MethodError
+        @test_throws MethodError KEGGAPI.kegg_info(:fail)
         sleep(0.4)
     end
 
