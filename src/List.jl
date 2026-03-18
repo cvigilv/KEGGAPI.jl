@@ -107,5 +107,5 @@ function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
         end
         sleep(timeout)
     end
-    return (url = urls, data = data)
+    return KeggTupleList(urls, fill(missing, length(first(data))), data)
 end
