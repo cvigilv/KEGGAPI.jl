@@ -76,6 +76,9 @@ using Test
         @test isa(kegg_link, KEGGAPI.KeggTupleList)
         @test length(kegg_link.data) > 0
         sleep(0.4)
+
+        kegg_link = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
+        @test isa(kegg_link, KEGGAPI.KeggTupleList)
     end
 
     @testset "get" begin
