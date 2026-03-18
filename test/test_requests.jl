@@ -65,20 +65,37 @@ using Test
     end
 
     @testset "conv" begin
-        kegg_conv = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
-        @test isa(kegg_conv, KEGGAPI.KeggTupleList)
-        @test length(kegg_conv.data) > 0
+        r = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data) > 0
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", "ncbi-geneid")
+        sleep(0.4)
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("eco", "fail")
+        sleep(0.4)
+
+        r = KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data) > 0
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", ["hsa:10458", "ece:Z5100"])
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("ncbi-proteinid", ["foo", "bar", "baz"])
         sleep(0.4)
     end
 
     @testset "link" begin
-        kegg_link = KEGGAPI.kegg_link("pathway", "hsa")
-        @test isa(kegg_link, KEGGAPI.KeggTupleList)
-        @test length(kegg_link.data) > 0
+        r = KEGGAPI.kegg_link("pathway", "hsa")
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data) > 0
         sleep(0.4)
 
-        kegg_link = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
-        @test isa(kegg_link, KEGGAPI.KeggTupleList)
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", "hsa"); sleep(0.4)
+
+        r = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data) > 0
+        sleep(0.4)
+
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("pathway", ["foo", "bar", "baz"]); sleep(0.4)
     end
 
     @testset "get" begin
@@ -114,7 +131,6 @@ using Test
         # Single request via macro
         r == KEGGAPI.kegg"hsa00010"
         sleep(0.4)
-
 
         # Biological sequence request
         r = KEGGAPI.kegg_get("hsa:10458", :aaseq)
