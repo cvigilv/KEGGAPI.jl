@@ -15,8 +15,7 @@ network | variant | disease  | drug   | dgroup   | organism
 ```
 
 # Arguments
-- `database::Symbol`: The KEGG database for which to retrieve the list of entries.
-
+- `database::String`: The KEGG database for which to retrieve the list of entries.
 # Returns
 - `data::Vector{Tuple{String, String}}`: A vector of tuples containing the entry
   identifiers and associated names for the specified database. If the data is
@@ -107,5 +106,6 @@ function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
         end
         sleep(timeout)
     end
-    return KeggTupleList(urls, fill(missing, length(first(data))), data)
+    colnames = isempty(data) ? Union{String,Missing}[] : Union{String,Missing}["ID"; fill(missing, length(first(data)) - 1)]
+    return KeggTupleList(urls, colnames, data)
 end

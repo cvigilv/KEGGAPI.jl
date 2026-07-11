@@ -39,7 +39,7 @@ function parse_as_text(response_text::String)
 end
 
 function parse_as_image(response_text::Vector)
-    return UInt8.(response_text)
+    return [UInt8.(response_text)]
 end
 
 RESPONSE_PROCESSORS = Dict(
@@ -172,7 +172,5 @@ entry = kegg"hsa:10458"
 ```
 """
 macro kegg_str(dbentry)
-    return quote
-        kegg_get($dbentry)
-    end
+    return :(kegg_get($(esc(dbentry))))
 end

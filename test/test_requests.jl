@@ -129,7 +129,7 @@ using Test
         sleep(0.4)
 
         # Single request via macro
-        r == KEGGAPI.kegg"hsa00010"
+@test r == KEGGAPI.kegg"hsa00010"
         sleep(0.4)
 
         # Biological sequence request
