@@ -127,7 +127,7 @@ and to **one pathway entry with the `:image` or `:kgml` option**.
 """
 function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; timeout::Float64 = 0.4)
     validate_get_option(option)
-    timeout < 0.334 && @warn "Setting timeout to less than 0.4 seconds may lead to API rate limit errors. Consider increasing the timeout to avoid this issue."
+    timeout < 0.334 && @warn "KEGG API accepts 3 requests per second. Current timeout may lead to API rate limit errors."
     length(dbentries) > 1 && option == :image && @warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry"
 
     urls = String[]
