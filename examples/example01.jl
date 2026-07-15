@@ -8,8 +8,8 @@ info_pathway = KEGGAPI.kegg_info("pathway");
 info_module = KEGGAPI.kegg_info("module");
 
 # List examples
-## List organisms
-kegg_organisms = KEGGAPI.kegg_list("organism");
+## List organisms (genomes)
+kegg_organisms = KEGGAPI.kegg_list("genome");
 ## List pathways
 kegg_pathways = KEGGAPI.kegg_list("pathway");
 ## List modules

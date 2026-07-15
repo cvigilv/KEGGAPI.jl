@@ -4,6 +4,7 @@ using HTTP
     kegg_list(database::String)
     kegg_list(pathway::String, org::String)
     kegg_list(brite::String, option::String)
+    kegg_list(genome::String, option::String)
 
 Get a list of entry identifiers and associated names
 
@@ -12,7 +13,7 @@ Allowed `database` values are:
 pathway  | brite   | module   | ko      | <org>    | ag     | vg      |
 vp       | genome  | vtax     | vgenome | compound | glycan | reaction|
 rclass   | rmodule | enzyme   | network | ntmap    | variant| disease |
-drug     | dgroup  | organism
+drug     | dgroup
 ```
 
 # Returns
@@ -24,15 +25,17 @@ drug     | dgroup  | organism
 # Extended help
 
 This operation can be used to obtain a list of all entries in each database. The
-database names shown in Tables 1 and 2, excluding the composite database names
-of genes, ligand and kegg, may be given. The special database name "organism" is
-allowed only in this operation, which may be used to obtain a list of KEGG
-organisms with the three- or four-letter organism codes.
+database names shown in the tables above, excluding the composite database names
+of genes and kegg, may be given. To obtain a list of KEGG organisms with their
+three- or four-letter organism codes, use the `genome` database.
 
 When the organism code is known, the second form can be used to obtain a list of
 organism-specific pathways.
 
-The third form is a similar option for brite hierarchies.
+The third form is a similar option for brite hierarchies (`br | jp | ko | <org>`).
+
+The fourth form lists the genomes for a KEGG organism group name or a taxonomy
+`<rank_id>` (phylum, class, order, family, genus or species).
 
 # References
 
