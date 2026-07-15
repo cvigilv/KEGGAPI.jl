@@ -1,7 +1,7 @@
 using KEGGAPI
 using Test
 
-@testset verbose=true "API" begin
+@testset verbose = true "API" begin
     @testset "request" begin
         # Test successful request to known working endpoint
         result = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
@@ -62,6 +62,24 @@ using Test
         @test isa(kegg_find_genes, KEGGAPI.KeggTupleList)
         @test length(kegg_find_genes.data) > 0
         sleep(0.4)
+
+        # Databases beyond the old whitelist now work (e.g. ko/enzyme)
+        kegg_find_ko = KEGGAPI.kegg_find("ko", "kinase")
+        @test isa(kegg_find_ko, KEGGAPI.KeggTupleList)
+        @test length(kegg_find_ko.data[1]) > 0
+        sleep(0.4)
+
+        # `option` is only valid for compound/drug, and must be a known option
+        @test_throws ArgumentError KEGGAPI.kegg_find("pathway", "glucose", "formula")
+        @test_throws ArgumentError KEGGAPI.kegg_find("compound", "glucose", "bogus")
+
+        # An unrecognized database warns (but is still passed through to the API)
+        @test_warn "not a recognized KEGG database" (
+            try
+                KEGGAPI.kegg_find("notadb", "x")
+            catch end
+        )
+        sleep(0.4)
     end
 
     @testset "conv" begin
@@ -96,6 +114,28 @@ using Test
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("pathway", ["foo", "bar", "baz"]); sleep(0.4)
+
+        # RDF output option returns the raw response text instead of a KeggTupleList
+        r = KEGGAPI.kegg_link("atc", "D00564", "turtle")
+        @test isa(r, String)
+        @test occursin("@prefix", r)
+        sleep(0.4)
+    end
+
+    @testset "ddi" begin
+        r = KEGGAPI.kegg_ddi("D00564")
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data) == 4
+        @test length(r.data[1]) > 0
+        sleep(0.4)
+
+        r = KEGGAPI.kegg_ddi(["D00564", "D00100"])
+        @test isa(r, KEGGAPI.KeggTupleList)
+        @test length(r.data[1]) > 0
+        sleep(0.4)
+
+        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_ddi("fail")
+        sleep(0.4)
     end
 
     @testset "get" begin
@@ -129,7 +169,7 @@ using Test
         sleep(0.4)
 
         # Single request via macro
-@test r == KEGGAPI.kegg"hsa00010"
+        @test r == KEGGAPI.kegg"hsa00010"
         sleep(0.4)
 
         # Biological sequence request
@@ -151,7 +191,15 @@ using Test
         @test isa(r.data, Vector)
         sleep(0.4)
         @test_warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry" KEGGAPI.kegg_get(["map00010", "map01110"], :image)
-        @test_warn "KEGG API accepts 3 requests per second. Current timeout may lead to API rate limit errors." KEGGAPI.kegg_get("map00010"; timeout=0.1)
+        @test_warn "KEGG API accepts 3 requests per second. Current timeout may lead to API rate limit errors." KEGGAPI.kegg_get("map00010"; timeout = 0.1)
+
+        # Doubled-size reference-pathway image request
+        r = KEGGAPI.kegg_get("map00010", :image2x)
+        @test isa(r, NamedTuple)
+        @test keys(r) == (:url, :data)
+        @test isa(r.url, String)
+        @test isa(r.data, Vector)
+        sleep(0.4)
 
         # Invalid option
         @test_throws ArgumentError KEGGAPI.kegg_get("map00010", :foo)

@@ -107,6 +107,6 @@ function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
         end
         sleep(timeout)
     end
-    colnames = isempty(data) ? Union{String,Missing}[] : Union{String,Missing}["ID"; fill(missing, length(first(data)) - 1)]
+    colnames = isempty(data) ? Union{String, Missing}[] : Union{String, Missing}["ID"; fill(missing, length(first(data)) - 1)]
     return KeggTupleList(urls, colnames, data)
 end

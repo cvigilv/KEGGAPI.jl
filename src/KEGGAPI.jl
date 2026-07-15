@@ -15,14 +15,14 @@ include("Requests.jl")
 include("Structures.jl")
 
 export @kegg_str,
-   kegg_conv,
-   kegg_ddi,
-   kegg_find,
-   kegg_get,
-   kegg_info,
-   kegg_link,
-   kegg_list,
-   request
+    kegg_conv,
+    kegg_ddi,
+    kegg_find,
+    kegg_get,
+    kegg_info,
+    kegg_link,
+    kegg_list,
+    request
 
 
 precompile(request, (String,))

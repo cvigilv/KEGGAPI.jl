@@ -2,12 +2,14 @@
 # Known KEGG database names accepted by the `find` operation. Organism codes
 # (`<org>`) are not enumerable here, so an unrecognized `database` only triggers
 # a warning rather than an error (see `kegg_find`).
-const KEGG_FIND_DATABASES = Set([
-    "kegg", "pathway", "brite", "module", "ko", "genes", "ag", "vg", "vp",
-    "genome", "vtax", "vgenome", "compound", "glycan", "reaction", "rclass",
-    "rmodule", "enzyme", "network", "ntmap", "variant", "disease", "drug",
-    "dgroup",
-])
+const KEGG_FIND_DATABASES = Set(
+    [
+        "kegg", "pathway", "brite", "module", "ko", "genes", "ag", "vg", "vp",
+        "genome", "vtax", "vgenome", "compound", "glycan", "reaction", "rclass",
+        "rmodule", "enzyme", "network", "ntmap", "variant", "disease", "drug",
+        "dgroup",
+    ]
+)
 
 # Options accepted by `find` and the databases they apply to.
 const KEGG_FIND_OPTIONS = ["formula", "exact_mass", "mol_weight", "nop"]
