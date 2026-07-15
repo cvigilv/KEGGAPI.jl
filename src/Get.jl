@@ -146,7 +146,7 @@ end
 function kegg_get(dbentry::String, args...; kwargs...)
     r = kegg_get([dbentry], args...; kwargs...)
     if length(args) > 0 && args[1] == :image
-        d = r.data
+        d = only(r.data)
     else
         d = only(r.data)
     end
