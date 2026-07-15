@@ -14,9 +14,8 @@ ag      | genome  | compound | glycan | reaction | rclass | enzyme |
 network | variant | disease  | drug   | dgroup   | organism
 ```
 
-# Arguments
-- `database::String`: The KEGG database for which to retrieve the list of entries.
 # Returns
+
 - `data::Vector{Tuple{String, String}}`: A vector of tuples containing the entry
   identifiers and associated names for the specified database. If the data is
   not available, an empty vector is returned.
@@ -51,6 +50,7 @@ function kegg_list(query::String, query_type::String = "")
         result = genomic_feature_parser(response_text, url)
     else
         data = []
+        url *= "/$query_type"
         try
             HTTP.open(:GET, url) do stream
                 while !eof(stream)
