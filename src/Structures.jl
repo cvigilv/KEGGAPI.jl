@@ -11,12 +11,6 @@ mutable struct KeggTupleList
     data::Vector{Any}
 end
 
-mutable struct KeggOrganismList
-    url::String
-    colnames::Vector{String}
-    data::Vector{Any}
-end
-
 mutable struct KeggGenesList
     url::String
     colnames::Vector{String}

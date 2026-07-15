@@ -46,34 +46,6 @@ function pathway_parser(response_text::String, url::String)
     )
 end
 
-function organism_parser(response_text::String, url::String)
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    tnumber = String[]
-    organism = String[]
-    species = String[]
-    phylogeny = String[]
-    colnames = ["T. number", "Organism", "Species", "Phylogeny"]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 4 || continue  # NOTE: Skip rows with less than 4 columns
-        push!(tnumber, fields[1])
-        push!(organism, fields[2])
-        push!(species, fields[3])
-        push!(phylogeny, fields[4])
-    end
-
-    return KeggOrganismList(
-        url,
-        colnames,
-        [tnumber, organism, species, phylogeny]
-    )
-end
-
 function conv_parser(response_text::String, url::String)
     # Split the response into lines
     lines = split(response_text, "\n")

@@ -46,10 +46,7 @@ function kegg_list(query::String, query_type::String = "")
     url = "https://rest.kegg.jp/list/$query"
 
     # Check request type
-    if query == "organism"
-        response_text = KEGGAPI.request(url)
-        result = organism_parser(response_text, url)
-    elseif query_type == "genes"
+    if query_type == "genes"
         response_text = KEGGAPI.request(url)
         result = genomic_feature_parser(response_text, url)
     else
