@@ -6,10 +6,10 @@ Get information about a specific database from the KEGG API.
 Allowed `database` values are:
 
 ```text
-kegg     | pathway | brite  | module  | ko      | genes    | <org>  |
-vg       | vp      | ag     | genome  | ligand  | compound | glycan |
-reaction | rclass  | enzyme | network | variant | disease  | drug   |
-dgroup
+kegg     | pathway | brite   | module  | ko      | genes    | <org>   |
+ag       | vg      | vp      | genome  | vtax    | vgenome  | ligand  |
+compound | glycan  | reaction| rclass  | rmodule | enzyme   | network |
+ntmap    | variant | disease | drug    | dgroup
 ```
 
 # Arguments

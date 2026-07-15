@@ -9,9 +9,10 @@ Get a list of entry identifiers and associated names
 
 Allowed `database` values are:
 ```
-pathway | brite   | module   | ko     | <org>    | vg     | vp     |
-ag      | genome  | compound | glycan | reaction | rclass | enzyme |
-network | variant | disease  | drug   | dgroup   | organism
+pathway  | brite   | module   | ko      | <org>    | ag     | vg      |
+vp       | genome  | vtax     | vgenome | compound | glycan | reaction|
+rclass   | rmodule | enzyme   | network | ntmap    | variant| disease |
+drug     | dgroup  | organism
 ```
 
 # Returns

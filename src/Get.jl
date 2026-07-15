@@ -76,10 +76,10 @@ Retrieve given database entries.
 Allowed `dbentries` (database entries):
 
 ```txt
-pathway   | brite   | module   | ko     | <org>    | vg         | vp      |
-ag        | genome  | compound | glycan | reaction | rclass     | enzyme  |
-network   | variant | disease  | drug   | dgroup   | disease_ja | drug_ja |
-dgroup_ja | compound_ja
+pathway   | brite    | module   | ko       | <org>    | ag         | vg      |
+vp        | genome   | vtax     | vgenome  | compound | glycan     | reaction|
+rclass    | rmodule  | enzyme   | network  | ntmap    | variant    | disease |
+drug      | dgroup   | disease_ja| drug_ja | dgroup_ja| compound_ja
 ```
 
 Allowed `option` for retrieval of selected fields:
