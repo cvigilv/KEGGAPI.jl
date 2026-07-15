@@ -24,6 +24,12 @@ makedocs(;
             "Examples" => "man/examples.md",
             "API reference" => "man/api.md",
         ],
+        "Use cases" => Any[
+            "Case 1: UniProt ID to KEGG information" => "man/usecases/case1.md",
+            "Case 2: EC reaction information" => "man/usecases/case2.md",
+            "Case 3: Identifying a compound" => "man/usecases/case3.md",
+            "Case 4: Target molecule information" => "man/usecases/case4.md",
+        ],
     ],
 )
 
