@@ -14,10 +14,6 @@ const KEGGAPI_GET_OPTIONS = Union{Symbol, Nothing}[
 validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
 
 # ---------------------------------------------------------------------------- Helpers
-function chunk_vector(vec::Vector, chunk_size::Int)
-    return [vec[i:min(i + chunk_size - 1, end)] for i in 1:chunk_size:length(vec)]
-end
-
 function build_kegg_url(chunk::Vector{String}, option::Union{Symbol, Nothing})
     chunk_query = join(chunk, "+")
     option_str = isnothing(option) ? "" : "/$option"

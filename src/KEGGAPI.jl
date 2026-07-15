@@ -2,17 +2,25 @@ module KEGGAPI
 
 import HTTP: get
 
-export request, kegg_info, kegg_list, kegg_find, kegg_get, kegg_conv, kegg_link, @kegg_str
-
-include("Structures.jl")
-include("Parsers.jl")
-include("List.jl")
-include("Find.jl")
+include("utils.jl")
 include("Conv.jl")
-include("Link.jl")
+include("Find.jl")
 include("Get.jl")
-include("Requests.jl")
 include("Info.jl")
+include("Link.jl")
+include("List.jl")
+include("Parsers.jl")
+include("Requests.jl")
+include("Structures.jl")
+
+export @kegg_str,
+   kegg_conv,
+   kegg_find,
+   kegg_get,
+   kegg_info,
+   kegg_link,
+   kegg_list,
+   request
 
 
 precompile(request, (String,))
