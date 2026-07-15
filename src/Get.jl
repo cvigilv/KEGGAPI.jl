@@ -5,11 +5,16 @@ const KEGGAPI_GET_OPTIONS = Union{Symbol, Nothing}[
     :mol,
     :kcf,
     :image,
+    :image2x,
     :conf,
     :kgml,
     :json,
     nothing,
 ]
+
+# Options whose response body is binary (image files) and must be fetched with
+# `request_other` rather than decoded as text.
+const KEGGAPI_GET_BINARY_OPTIONS = (:image, :image2x)
 
 validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
 
@@ -43,7 +48,8 @@ RESPONSE_PROCESSORS = Dict(
     :ntseq => parse_as_bioseq,
     :mol => parse_as_mol,
     :default => parse_as_text,
-    :image => parse_as_image
+    :image => parse_as_image,
+    :image2x => parse_as_image
 )
 
 # HACK: this is a workaround as get(option::Symbol, lookup::Dict{Symbol, Function},
@@ -78,7 +84,7 @@ dgroup_ja | compound_ja
 
 Allowed `option` for retrieval of selected fields:
 
-    :aaseq | :ntseq | :mol | :kcf | :image | :conf | :kgml | :json | nothing
+    :aaseq | :ntseq | :mol | :kcf | :image | :image2x | :conf | :kgml | :json | nothing
 
 # Arguments
 - `dbentries::Vector{String}`: A vector of KEGG database entries to retrieve.
@@ -111,10 +117,11 @@ calls per seconds is 3, so a default timeout of 0.4 seconds is set to ensure tha
 
 Options allow retrieval of selected fields, including sequence data from genes
 entries, chemical structure data or GIF image files from compound, glycan and
-drug entries, PNG image files or KGML files from pathway entries.
+drug entries, PNG image files or KGML files from pathway entries. The `:image2x`
+option retrieves the doubled-size PNG image of a reference pathway map.
 
 The input is limited to **one compound/glycan/drug entry with the `:image` option**,
-and to **one pathway entry with the `:image` or `:kgml` option**.
+and to **one pathway entry with the `:image`, `:image2x` or `:kgml` option**.
 
 # Reference
 
@@ -133,7 +140,7 @@ function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = no
     for chunk in chunk_vector(dbentries, 10)
         url = build_kegg_url(chunk, option)
         push!(urls, url)
-        response_text = option == :image ? request_other(url) : request(url)
+        response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? request_other(url) : request(url)
         for datum in processor(response_text)
             push!(data, datum)
         end
@@ -145,12 +152,7 @@ end
 
 function kegg_get(dbentry::String, args...; kwargs...)
     r = kegg_get([dbentry], args...; kwargs...)
-    if length(args) > 0 && args[1] == :image
-        d = only(r.data)
-    else
-        d = only(r.data)
-    end
-    return (url = only(r.url), data = d)
+    return (url = only(r.url), data = only(r.data))
 end
 
 """

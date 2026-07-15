@@ -4,6 +4,7 @@ import HTTP: get
 
 include("utils.jl")
 include("Conv.jl")
+include("Ddi.jl")
 include("Find.jl")
 include("Get.jl")
 include("Info.jl")
@@ -15,6 +16,7 @@ include("Structures.jl")
 
 export @kegg_str,
    kegg_conv,
+   kegg_ddi,
    kegg_find,
    kegg_get,
    kegg_info,
@@ -26,5 +28,6 @@ export @kegg_str,
 precompile(request, (String,))
 precompile(request_other, (String,))
 precompile(kegg_get, (Vector,))
+precompile(kegg_ddi, (Vector,))
 
 end
