@@ -62,6 +62,38 @@ python3 -m venv /tmp/kegg_bench_venv
 /tmp/kegg_bench_venv/bin/pip install biopython
 ```
 
+### Nix-provided R
+
+A nix R installs packages from source but does not expose its dependency paths
+to those builds, so CRAN/Bioconductor sources fail to link (`library not found
+for -lintl`, `zlib.h not found`, `-lldap`, `-lkrb5`). Point `R_MAKEVARS_USER` at
+a Makevars supplying the paths — adjust the store hashes to match your system,
+which `otool -L $(R RHOME)/lib/libR.dylib` and `ls -d /nix/store/*<pkg>*` will
+tell you:
+
+```make
+GETTEXT  = /nix/store/...-gettext-0.22.5
+ZLIB_DEV = /nix/store/...-zlib-1.3.1-dev
+ZLIB     = /nix/store/...-zlib-1.3.1
+PNG_DEV  = /nix/store/...-libpng-apng-1.6.46-dev
+PNG      = /nix/store/...-libpng-apng-1.6.46
+LDAP     = /nix/store/...-openldap-2.6.9
+KRB5     = /nix/store/...-krb5-1.21.3-lib
+
+CPPFLAGS += -I$(ZLIB_DEV)/include -I$(PNG_DEV)/include
+LDFLAGS  += -L$(GETTEXT)/lib -L$(ZLIB)/lib -L$(PNG)/lib -L$(LDAP)/lib -L$(KRB5)/lib
+```
+
+```bash
+R_MAKEVARS_USER=/path/to/Makevars \
+  Rscript -e 'BiocManager::install("KEGGREST", ask = FALSE, update = FALSE)'
+```
+
+Using `R_MAKEVARS_USER` keeps this out of `~/.R/Makevars`, so it applies only to
+the install. It is not needed to *run* the benchmark, only to build the packages.
+
+### Selecting interpreters
+
 The `JULIA`, `RSCRIPT` and `PYTHON` environment variables override which
 interpreter is used, which is how a virtualenv is selected:
 
