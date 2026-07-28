@@ -8,15 +8,53 @@
 
 KEGGAPI.jl is a Julia package for accesing the Kyoto Encyclopedia of Genes and Genomes, striving to take advantage of the speed and flexibility that Julia offers and make it accessible to the bioinformatics and functional annotation communities.
 
-## Examples
+## Installation
 
-Examples can be found in the `examples` folder; `example01` provides a comprehensive demonstration of the functions contained in this package.
+```julia
+pkg> add https://github.com/cvigilv/KEGGAPI.jl
+```
 
-Example use cases can also be found as colab notebooks: `case01.ipynb`, `case02.ipynb`, `case03.ipynb` and `case04.ipynb` show a sample workflow.
+## Usage
+
+The package wraps the [KEGG REST API](https://www.kegg.jp/kegg/rest/keggapi.html)
+operations:
+
+| Function     | KEGG operation | Purpose                                          |
+|:-------------|:---------------|:-------------------------------------------------|
+| `kegg_info`  | `info`         | Database release information and statistics       |
+| `kegg_list`  | `list`         | Entry identifiers and associated names            |
+| `kegg_find`  | `find`         | Search entries by keyword or chemical data        |
+| `kegg_get`   | `get`          | Retrieve entries, sequences, images, KGML, JSON   |
+| `kegg_conv`  | `conv`         | Convert between KEGG and outside identifiers      |
+| `kegg_link`  | `link`         | Find related entries via cross-references         |
+| `kegg_ddi`   | `ddi`          | Adverse drug-drug interactions                    |
+
+```julia
+using KEGGAPI
+
+result = kegg_find("compound", "glucose")
+result.colnames    # column names
+result.data        # retrieved data
+```
+
+## Documentation
+
+- [Getting started](https://cvigilv.github.io/KEGGAPI.jl/dev/man/getting-started/)
+- [Examples](https://cvigilv.github.io/KEGGAPI.jl/dev/man/examples/)
+- [API reference](https://cvigilv.github.io/KEGGAPI.jl/dev/man/api/)
+
+Worked end-to-end use cases:
+
+- [Case 1: From a UniProt ID to KEGG information](https://cvigilv.github.io/KEGGAPI.jl/dev/man/usecases/case1/)
+- [Case 2: EC reaction information in KEGG](https://cvigilv.github.io/KEGGAPI.jl/dev/man/usecases/case2/)
+- [Case 3: Identifying a compound in KEGG](https://cvigilv.github.io/KEGGAPI.jl/dev/man/usecases/case3/)
+- [Case 4: Target molecule information at KEGG](https://cvigilv.github.io/KEGGAPI.jl/dev/man/usecases/case4/)
 
 ## Speed Tests
 
 ![KEGGAPI.jl Benchmarks](benchmarking/benchmark_compare.png "KEGGAPI.jl Benchmarks")
+
+See [`benchmarking/`](benchmarking/README.md) for how to reproduce these numbers.
 
 ## Citation
 
