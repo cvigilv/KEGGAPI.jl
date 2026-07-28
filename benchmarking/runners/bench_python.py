@@ -13,14 +13,17 @@ PAUSE = float(sys.argv[2]) if len(sys.argv) > 2 else 0.4
 # (label, thunk) pairs -- keep in sync with the other runners. Bio.KEGG.REST has
 # no ddi wrapper, so that case is absent here and reported as unsupported.
 CASES = [
-    ("Info", lambda: BK.kegg_info("kegg")),
-    ("List", lambda: BK.kegg_list("pathway")),
-    ("Find", lambda: BK.kegg_find("compound", "glucose")),
-    ("Get", lambda: BK.kegg_get("hsa:10458")),
-    ("GetSeq", lambda: BK.kegg_get("hsa:10458", "aaseq")),
-    ("Conv", lambda: BK.kegg_conv("ncbi-geneid", "eco:b0002")),
-    ("Link", lambda: BK.kegg_link("pathway", "hsa:10458")),
+    ("info", lambda: BK.kegg_info("kegg")),
+    ("list", lambda: BK.kegg_list("pathway")),
+    ("find", lambda: BK.kegg_find("compound", "glucose")),
+    ("get", lambda: BK.kegg_get("hsa:10458")),
+    ("getseq", lambda: BK.kegg_get("hsa:10458", "aaseq")),
+    ("conv", lambda: BK.kegg_conv("ncbi-geneid", "eco:b0002")),
+    ("link", lambda: BK.kegg_link("pathway", "hsa:10458")),
 ]
+
+# Must match the interface name in run_benchmarks.jl.
+LABEL = "Bio.KEGG.REST (Python)"
 
 
 def timeit(fn):
@@ -36,5 +39,5 @@ for _, thunk in CASES:
 
 for _ in range(NREPS):
     for label, thunk in CASES:
-        print("{},Python,{}".format(label, timeit(thunk)))
+        print("{},{},{}".format(label, LABEL, timeit(thunk)))
         time.sleep(PAUSE)

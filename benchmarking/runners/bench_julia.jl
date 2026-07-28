@@ -15,15 +15,18 @@ end
 
 # (label, thunk) pairs -- keep in sync with the other runners.
 const CASES = [
-    ("Info", () -> KEGGAPI.kegg_info("kegg")),
-    ("List", () -> KEGGAPI.kegg_list("pathway")),
-    ("Find", () -> KEGGAPI.kegg_find("compound", "glucose")),
-    ("Get", () -> get_entry("hsa:10458")),
-    ("GetSeq", () -> get_entry("hsa:10458", :aaseq)),
-    ("Conv", () -> KEGGAPI.kegg_conv("ncbi-geneid", "eco:b0002")),
-    ("Link", () -> KEGGAPI.kegg_link("pathway", "hsa:10458")),
-    ("Ddi", () -> KEGGAPI.kegg_ddi("D00564")),
+    ("info", () -> KEGGAPI.kegg_info("kegg")),
+    ("list", () -> KEGGAPI.kegg_list("pathway")),
+    ("find", () -> KEGGAPI.kegg_find("compound", "glucose")),
+    ("get", () -> get_entry("hsa:10458")),
+    ("getseq", () -> get_entry("hsa:10458", :aaseq)),
+    ("conv", () -> KEGGAPI.kegg_conv("ncbi-geneid", "eco:b0002")),
+    ("link", () -> KEGGAPI.kegg_link("pathway", "hsa:10458")),
+    ("ddi", () -> KEGGAPI.kegg_ddi("D00564")),
 ]
+
+# Must match the interface name in run_benchmarks.jl.
+const LABEL = "KEGGAPI.jl"
 
 # Warm up so compilation latency is not attributed to the first replicate.
 for (_, thunk) in CASES
@@ -38,6 +41,6 @@ function timeit(f)
 end
 
 for _ in 1:NREPS, (label, thunk) in CASES
-    println("$label,Julia,", timeit(thunk))
+    println("$label,$LABEL,", timeit(thunk))
     sleep(PAUSE)
 end

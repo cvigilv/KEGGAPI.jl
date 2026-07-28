@@ -10,14 +10,17 @@ pause <- if (length(args) >= 2) as.numeric(args[2]) else 0.4
 # ddi wrapper, so that case is absent here and reported as unsupported.
 # NOTE: keggList (not keggInfo) is the counterpart of the list operation.
 cases <- list(
-    list("Info", function() keggInfo("kegg")),
-    list("List", function() keggList("pathway")),
-    list("Find", function() keggFind("compound", "glucose")),
-    list("Get", function() keggGet("hsa:10458")),
-    list("GetSeq", function() keggGet("hsa:10458", "aaseq")),
-    list("Conv", function() keggConv("ncbi-geneid", "eco:b0002")),
-    list("Link", function() keggLink("pathway", "hsa:10458"))
+    list("info", function() keggInfo("kegg")),
+    list("list", function() keggList("pathway")),
+    list("find", function() keggFind("compound", "glucose")),
+    list("get", function() keggGet("hsa:10458")),
+    list("getseq", function() keggGet("hsa:10458", "aaseq")),
+    list("conv", function() keggConv("ncbi-geneid", "eco:b0002")),
+    list("link", function() keggLink("pathway", "hsa:10458"))
 )
+
+# Must match the interface name in run_benchmarks.jl.
+label <- "KEGGREST (R)"
 
 timeit <- function(fn) {
     t0 <- Sys.time()
@@ -33,7 +36,7 @@ for (case in cases) {
 
 for (i in seq_len(nreps)) {
     for (case in cases) {
-        cat(sprintf("%s,R,%s\n", case[[1]], timeit(case[[2]])))
+        cat(sprintf("%s,%s,%s\n", case[[1]], label, timeit(case[[2]])))
         Sys.sleep(pause)
     }
 }

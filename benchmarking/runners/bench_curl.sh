@@ -10,15 +10,18 @@ BASE="https://rest.kegg.jp"
 
 # label|path pairs -- keep in sync with the other runners.
 CASES=(
-    "Info|$BASE/info/kegg"
-    "List|$BASE/list/pathway"
-    "Find|$BASE/find/compound/glucose"
-    "Get|$BASE/get/hsa:10458"
-    "GetSeq|$BASE/get/hsa:10458/aaseq"
-    "Conv|$BASE/conv/ncbi-geneid/eco:b0002"
-    "Link|$BASE/link/pathway/hsa:10458"
-    "Ddi|$BASE/ddi/D00564"
+    "info|$BASE/info/kegg"
+    "list|$BASE/list/pathway"
+    "find|$BASE/find/compound/glucose"
+    "get|$BASE/get/hsa:10458"
+    "getseq|$BASE/get/hsa:10458/aaseq"
+    "conv|$BASE/conv/ncbi-geneid/eco:b0002"
+    "link|$BASE/link/pathway/hsa:10458"
+    "ddi|$BASE/ddi/D00564"
 )
+
+# Must match the interface name in run_benchmarks.jl.
+LABEL="curl"
 
 # `curl -w %{time_total}` reports the transfer time without shell startup cost.
 timeit() {
@@ -33,7 +36,7 @@ done
 
 for _ in $(seq 1 "$NREPS"); do
     for case in "${CASES[@]}"; do
-        echo "${case%%|*},Curl,$(timeit "${case#*|}")"
+        echo "${case%%|*},$LABEL,$(timeit "${case#*|}")"
         sleep "$PAUSE"
     done
 done

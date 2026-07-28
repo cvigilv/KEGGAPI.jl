@@ -51,22 +51,22 @@ const PYTHON = get(ENV, "PYTHON", "python3")
 
 interfaces = [
     Interface(
-        "Julia",
+        "KEGGAPI.jl",
         `$JULIA --version`,
         `$JULIA --project=$BENCHDIR $(joinpath(RUNNERS, "bench_julia.jl")) $NREPS $PAUSE`,
     ),
     Interface(
-        "R",
+        "KEGGREST (R)",
         `$RSCRIPT -e "suppressMessages(library(KEGGREST))"`,
         `$RSCRIPT $(joinpath(RUNNERS, "bench_r.R")) $NREPS $PAUSE`,
     ),
     Interface(
-        "Python",
+        "Bio.KEGG.REST (Python)",
         `$PYTHON -c "import Bio.KEGG.REST"`,
         `$PYTHON $(joinpath(RUNNERS, "bench_python.py")) $NREPS $PAUSE`,
     ),
     Interface(
-        "Curl",
+        "curl",
         `curl --version`,
         `bash $(joinpath(RUNNERS, "bench_curl.sh")) $NREPS $PAUSE`,
     ),
@@ -75,9 +75,7 @@ interfaces = [
 available(iface) = success(pipeline(iface.probe, stdout = devnull, stderr = devnull))
 
 # ------------------------------------------------------------------ Run
-# Rows are (Function, Language) => vector of per-call seconds.
 samples = Dict{Tuple{String, String}, Vector{Float64}}()
-
 for iface in interfaces
     if !available(iface)
         @warn "Skipping $(iface.name): dependencies not installed" probe = iface.probe
@@ -102,25 +100,19 @@ end
 
 isempty(samples) && error("No interface could be benchmarked.")
 
-# ------------------------------------------------------------------ Summarise
+# Every operation x interface pair gets a row. Pairs with no samples -- an
+# interface that was skipped, or an operation it does not wrap (e.g. ddi in
+# KEGGREST) -- are written with an empty median rather than omitted.
+const OPERATIONS = ["info", "list", "find", "get", "getseq", "conv", "link", "ddi"]
+
+observed = unique(first.(keys(samples)))
+operations = vcat(OPERATIONS, sort([op for op in observed if op ∉ OPERATIONS]))
+
 outfile = joinpath(BENCHDIR, "benchmark_compare.csv")
 open(outfile, "w") do io
-    println(io, "Function,Language,Mean,SD")
-    for key in sort(collect(keys(samples)))
-        fn, lang = key
-        times = samples[key]
-        sd = length(times) > 1 ? std(times) : 0.0
-        println(io, "$fn,$lang,$(mean(times)),$sd")
+    println(io, "Function,Language,Median")
+    for op in operations, iface in interfaces
+        times = get(samples, (op, iface.name), Float64[])
+        println(io, "$op,$(iface.name),", isempty(times) ? "" : median(times))
     end
 end
-
-@info "Wrote $outfile"
-println()
-@printf("%-10s %-10s %10s %10s\n", "Function", "Language", "Mean (s)", "SD (s)")
-for key in sort(collect(keys(samples)))
-    fn, lang = key
-    times = samples[key]
-    sd = length(times) > 1 ? std(times) : 0.0
-    @printf("%-10s %-10s %10.4f %10.4f\n", fn, lang, mean(times), sd)
-end
-println("\nRegenerate the figure with:\n  julia --project=benchmarking benchmarking/plot_benchmarks.jl")
