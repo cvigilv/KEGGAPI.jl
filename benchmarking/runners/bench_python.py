@@ -10,6 +10,18 @@ import Bio.KEGG.REST as BK
 NREPS = int(sys.argv[1]) if len(sys.argv) > 1 else 5
 PAUSE = float(sys.argv[2]) if len(sys.argv) > 2 else 0.4
 
+# (label, thunk) pairs -- keep in sync with the other runners. Bio.KEGG.REST has
+# no ddi wrapper, so that case is absent here and reported as unsupported.
+CASES = [
+    ("Info", lambda: BK.kegg_info("kegg")),
+    ("List", lambda: BK.kegg_list("pathway")),
+    ("Find", lambda: BK.kegg_find("compound", "glucose")),
+    ("Get", lambda: BK.kegg_get("hsa:10458")),
+    ("GetSeq", lambda: BK.kegg_get("hsa:10458", "aaseq")),
+    ("Conv", lambda: BK.kegg_conv("ncbi-geneid", "eco:b0002")),
+    ("Link", lambda: BK.kegg_link("pathway", "hsa:10458")),
+]
+
 
 def timeit(fn):
     t0 = time.perf_counter()
@@ -18,13 +30,11 @@ def timeit(fn):
 
 
 # Warm up (connection setup, imports) before the measured replicates.
-BK.kegg_info("kegg").read()
-time.sleep(PAUSE)
+for _, thunk in CASES:
+    thunk().read()
+    time.sleep(PAUSE)
 
 for _ in range(NREPS):
-    print("Info,Python,{}".format(timeit(lambda: BK.kegg_info("kegg"))))
-    time.sleep(PAUSE)
-    print("List,Python,{}".format(timeit(lambda: BK.kegg_list("pathway"))))
-    time.sleep(PAUSE)
-    print("Get,Python,{}".format(timeit(lambda: BK.kegg_get("hsa:10458"))))
-    time.sleep(PAUSE)
+    for label, thunk in CASES:
+        print("{},Python,{}".format(label, timeit(thunk)))
+        time.sleep(PAUSE)

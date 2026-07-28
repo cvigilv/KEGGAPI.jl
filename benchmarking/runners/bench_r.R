@@ -6,22 +6,34 @@ args <- commandArgs(trailingOnly = TRUE)
 nreps <- if (length(args) >= 1) as.integer(args[1]) else 5
 pause <- if (length(args) >= 2) as.numeric(args[2]) else 0.4
 
-timeit <- function(expr) {
+# (label, thunk) pairs -- keep in sync with the other runners. KEGGREST has no
+# ddi wrapper, so that case is absent here and reported as unsupported.
+# NOTE: keggList (not keggInfo) is the counterpart of the list operation.
+cases <- list(
+    list("Info", function() keggInfo("kegg")),
+    list("List", function() keggList("pathway")),
+    list("Find", function() keggFind("compound", "glucose")),
+    list("Get", function() keggGet("hsa:10458")),
+    list("GetSeq", function() keggGet("hsa:10458", "aaseq")),
+    list("Conv", function() keggConv("ncbi-geneid", "eco:b0002")),
+    list("Link", function() keggLink("pathway", "hsa:10458"))
+)
+
+timeit <- function(fn) {
     t0 <- Sys.time()
-    force(expr)
+    invisible(fn())
     as.numeric(difftime(Sys.time(), t0, units = "secs"))
 }
 
 # Warm up before the measured replicates.
-invisible(keggInfo("kegg"))
-Sys.sleep(pause)
+for (case in cases) {
+    invisible(case[[2]]())
+    Sys.sleep(pause)
+}
 
 for (i in seq_len(nreps)) {
-    cat(sprintf("Info,R,%s\n", timeit(keggInfo("kegg"))))
-    Sys.sleep(pause)
-    # NOTE: keggList (not keggInfo) is the counterpart of the list operation.
-    cat(sprintf("List,R,%s\n", timeit(keggList("pathway"))))
-    Sys.sleep(pause)
-    cat(sprintf("Get,R,%s\n", timeit(keggGet("hsa:10458"))))
-    Sys.sleep(pause)
+    for (case in cases) {
+        cat(sprintf("%s,R,%s\n", case[[1]], timeit(case[[2]])))
+        Sys.sleep(pause)
+    }
 }

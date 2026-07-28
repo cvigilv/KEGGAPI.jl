@@ -7,6 +7,7 @@
 #
 using DelimitedFiles
 using Plots
+using Plots.PlotMeasures  # provides `mm` for margins
 using StatsPlots  # provides `groupedbar`
 
 const BENCHDIR = @__DIR__
@@ -20,10 +21,17 @@ languages = String.(raw[:, 2])
 means = Float64.(raw[:, 3])
 sds = Float64.(raw[:, 4])
 
-# One grouped bar per operation, one series per language.
-fn_order = unique(functions)
+# One grouped bar per operation, one series per language. Operations follow the
+# canonical KEGG order rather than the CSV's alphabetical sort; anything not
+# listed is appended so new cases still plot.
+const CANONICAL = ["Info", "List", "Find", "Get", "GetSeq", "Conv", "Link", "Ddi"]
+present = unique(functions)
+fn_order = [f for f in CANONICAL if f in present]
+append!(fn_order, sort([f for f in present if f ∉ CANONICAL]))
 lang_order = unique(languages)
 
+# Missing (operation, language) pairs -- e.g. ddi, which KEGGREST and
+# Bio.KEGG.REST do not wrap -- stay NaN so no bar is drawn for them.
 matrix = fill(NaN, length(fn_order), length(lang_order))
 errors = zeros(length(fn_order), length(lang_order))
 for i in eachindex(functions)
@@ -44,8 +52,10 @@ plt = groupedbar(
     legend = :topleft,
     bar_width = 0.7,
     framestyle = :box,
-    size = (800, 450),
+    size = (1000, 500),
     dpi = 200,
+    left_margin = 8mm,
+    bottom_margin = 8mm,
 )
 
 out = joinpath(BENCHDIR, "benchmark_compare.png")

@@ -1,13 +1,27 @@
 # Benchmarking
 
 Compares `KEGGAPI.jl` against the other common KEGG REST clients — `KEGGREST`
-(R), `Bio.KEGG.REST` (Python) and raw `curl` — on three operations:
+(R), `Bio.KEGG.REST` (Python) and raw `curl` — across the KEGG operations:
 
-| Operation | Query          |
-|:----------|:---------------|
-| `Info`    | `info/kegg`    |
-| `List`    | `list/pathway` |
-| `Get`     | `get/hsa:10458`|
+| Operation | Query                          | Covered by            |
+|:----------|:-------------------------------|:----------------------|
+| `Info`    | `info/kegg`                    | all                   |
+| `List`    | `list/pathway`                 | all                   |
+| `Find`    | `find/compound/glucose`        | all                   |
+| `Get`     | `get/hsa:10458`                | all                   |
+| `GetSeq`  | `get/hsa:10458/aaseq`          | all                   |
+| `Conv`    | `conv/ncbi-geneid/eco:b0002`   | all                   |
+| `Link`    | `link/pathway/hsa:10458`       | all                   |
+| `Ddi`     | `ddi/D00564`                   | KEGGAPI.jl, curl only |
+
+`ddi` has no wrapper in KEGGREST or Bio.KEGG.REST, so those interfaces simply
+have no bar for it in the figure. The `conv` case uses `ncbi-geneid` rather than
+`ncbi-proteinid` because Bio.KEGG.REST only recognises the legacy outside-database
+names (`ncbi-gi | ncbi-geneid | uniprot`) and rejects the newer ones.
+
+`KEGGAPI.jl`'s chunked `kegg_get` sleeps internally to respect KEGG's rate limit;
+the Julia runner passes `timeout = 0.0` so that deliberate delay is not counted
+as work, since the runner already spaces its own calls.
 
 Each interface runs every operation inside a **single** process, so what is
 measured is per-call time rather than interpreter startup. A warm-up call is
