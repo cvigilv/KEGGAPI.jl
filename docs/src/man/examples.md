@@ -17,7 +17,7 @@ using DataFrames
 ```
 
 ```@example examples
-output = KEGGAPI.conv("eco", "ncbi-geneid"); 
+output = KEGGAPI.kegg_conv("eco", "ncbi-geneid"); 
 first(DataFrame(
   output.data,
   output.colnames
@@ -25,7 +25,7 @@ first(DataFrame(
 ```
 
 ```@example examples
-output = KEGGAPI.conv("ncbi-geneid", "eco");
+output = KEGGAPI.kegg_conv("ncbi-geneid", "eco");
 first(DataFrame(
   output.data,
   output.colnames
@@ -33,7 +33,7 @@ first(DataFrame(
 ```
 
 ```@example examples
-output = KEGGAPI.conv("ncbi-proteinid", "hsa:10458+ece:Z5100");
+output = KEGGAPI.kegg_conv("ncbi-proteinid", "hsa:10458+ece:Z5100");
 DataFrame(
   output.data,
   output.colnames
@@ -41,7 +41,7 @@ DataFrame(
 ```
 
 ```@example examples
-output = KEGGAPI.conv("genes", "ncbi-geneid:948364");
+output = KEGGAPI.kegg_conv("genes", "ncbi-geneid:948364");
 DataFrame(
   output.data,
   output.colnames

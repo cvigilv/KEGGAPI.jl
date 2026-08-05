@@ -10,11 +10,11 @@ This function is not intended for direct use. Instead, use the `info`, `list`, a
 request("https://rest.kegg.jp/info/kegg")
 ```
 """
-function request(url::String)
+function request(url::String, T::Type = String)
     response = get(url, status_exception = false, verbose = false)
 
     if (response.status == 200)
-        return String(response.body)
+        return T(response.body)
     else
         throw(
             RequestError(

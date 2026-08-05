@@ -17,11 +17,11 @@ To use KEGGAPI.jl, simply import the package:
 using KEGGAPI
 ```
 
-And use the interfaces to query the KEGG API. For example, to list all organisms in KEGG:
+And use the interfaces to query the KEGG API. For example, to list all organisms (genomes) in KEGG:
 ```@example examples
-result = KEGGAPI.list("organism");
+result = KEGGAPI.kegg_list("genome");
 ```
-This returns a `KeggOrganismList` object with the API call, column names and data. The data can
+This returns a `KeggTupleList` object with the API call, column names and data. The data can
 accessed by indexing into the respective fields of the object:
 ```@example examples
 result.url

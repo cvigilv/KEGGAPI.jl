@@ -6,14 +6,8 @@ struct RequestError <: Exception
 end
 
 mutable struct KeggTupleList
-    url::String
-    colnames::Vector{String}
-    data::Vector{Any}
-end
-
-mutable struct KeggOrganismList
-    url::String
-    colnames::Vector{String}
+    url::Union{String, Vector{String}}
+    colnames::Vector{Union{String, Missing}}
     data::Vector{Any}
 end
 

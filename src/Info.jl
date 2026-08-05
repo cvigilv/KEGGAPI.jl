@@ -1,20 +1,41 @@
 """
-KEGGAPI.info(database) -> String
+    KEGGAPI.kegg_info(database::String)
 
 Get information about a specific database from the KEGG API.
 
-Example:
+Allowed `database` values are:
 
-```example
-KEGGAPI.info("kegg")
+```text
+kegg     | pathway | brite   | module  | ko      | genes    | <org>   |
+ag       | vg      | vp      | genome  | vtax    | vgenome  | ligand  |
+compound | glycan  | reaction| rclass  | rmodule | enzyme   | network |
+ntmap    | variant | disease | drug    | dgroup
+```
+
+# Arguments
+- `database::String`: The KEGG database for which to retrieve information.
+
+# Returns
+- `data::String`: A string containing the information about the specified database.
+
+# Example
+
+```julia-repl
+KEGGAPI.kegg_info("kegg")
+
+# Extended help
+
+This operation displays the database release information with statistics for the
+databases shown in the table. Except for :kegg, :genes and :ligand, this operation
+also retrieves the list of linked databases that can be used in the link operation.
+
+# Reference
+
+- https://www.kegg.jp/kegg/rest/keggapi.html#info
 ```
 """
-function info(database::String)
-    # function to retrieve information about a specific database from the KEGG API.
-    # Define the URL for the API request.
+function kegg_info(database::String)
     url = "https://rest.kegg.jp/info/$database"
-    # Make a request to the URL and convert the response to a string.
     response_text = request(url)
-    # Return the lines as a string.
     return response_text
 end
