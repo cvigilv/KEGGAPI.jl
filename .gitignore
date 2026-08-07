@@ -4,7 +4,7 @@
 /Manifest.toml
 /docs/Manifest.toml
 /docs/build/
-.snakemake
+/benchmarking/Manifest.toml
 *.png
 !benchmark_compare.png
 benchmarking/.Rhistory

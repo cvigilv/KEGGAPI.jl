@@ -1,1 +1,0 @@
-x=$(curl https://rest.kegg.jp/get/hsa:10458)

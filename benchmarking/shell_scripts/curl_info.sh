@@ -1,1 +1,0 @@
-x=$(curl https://rest.kegg.jp/info/KEGG)

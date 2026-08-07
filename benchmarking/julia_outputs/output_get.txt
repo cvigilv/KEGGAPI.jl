@@ -1,5 +1,0 @@
-       20.04 real        13.32 user         0.57 sys
-       18.09 real        13.53 user         0.51 sys
-       15.87 real        12.48 user         0.44 sys
-       17.11 real        13.33 user         0.49 sys
-       15.19 real        12.50 user         0.42 sys
