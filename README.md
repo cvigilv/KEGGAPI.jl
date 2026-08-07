@@ -53,7 +53,7 @@ Worked end-to-end use cases:
 
 ## Speed Tests
 
-![KEGGAPI.jl Benchmarks](benchmarking/benchmark_compare.png "KEGGAPI.jl Benchmarks")
+![KEGGAPI.jl Benchmarks](benchmarking/benchmark.svg "KEGGAPI.jl Benchmarks")
 
 See [`benchmarking/`](benchmarking/README.md) for how to reproduce these numbers.
 
