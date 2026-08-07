@@ -12,7 +12,7 @@ KEGGAPI.jl is a Julia package for accesing the Kyoto Encyclopedia of Genes and G
 ## Installation
 
 ```julia
-pkg> add https://github.com/cvigilv/KEGGAPI.jl
+pkg> add KEGGAPI
 ```
 
 ## Usage
