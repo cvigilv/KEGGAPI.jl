@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "KEGGAPI.jl"
+version: 1.0.0
+license: "MIT"
+type: software
+abstract: "KEGGAPI.jl is a Julia package for accesing the Kyoto Encyclopedia of Genes and Genomes, striving to take advantage of the speed and flexibility that Julia offers and make it accessible to the bioinformatics and functional annotation communities."
+message: "If you use this software, please cite it as below."
+authors:
+  - given-names: Carlos
+    family-names: Vigil-Vásquez
+    affiliation: Universite de Lille; Institut Pasteur de Lille; Ghent University
+    orcid: "https://orcid.org/0000-0001-8523-6159"
+  - given-names: Nicholas
+    family-names: Geoffrion
+    affiliation: Centre de Recherche du CHU Sainte Justine, Montreal, Canada
+    orcid: "https://orcid.org/0000-0001-7033-3730"
+  - given-names: María Victoria
+    family-names: Aguilar-Pontes
+    affiliation: Department of Genetics, University of Córdoba, Campus de Rabanales, Córdoba, 14014, Spain
+    orcid: "https://orcid.org/0000-0002-3174-8834"
+keywords:
+  - julia
+  - bioinformatics
+  - database
+  - api
