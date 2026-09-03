@@ -5,6 +5,7 @@
 [![Build Status](https://github.com/cvigilv/KEGGAPI.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/cvigilv/KEGGAPI.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/cvigilv/KEGGAPI.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/cvigilv/KEGGAPI.jl)
 [![code style: runic](https://img.shields.io/badge/code_style-%E1%9A%B1%E1%9A%A2%E1%9A%BE%E1%9B%81%E1%9A%B2-black)](https://github.com/fredrikekre/Runic.jl)
+[![DOI](https://zenodo.org/badge/667588694.svg)](https://doi.org/10.5281/zenodo.22281436)
 
 
 KEGGAPI.jl is a Julia package for accesing the Kyoto Encyclopedia of Genes and Genomes, striving to take advantage of the speed and flexibility that Julia offers and make it accessible to the bioinformatics and functional annotation communities.
