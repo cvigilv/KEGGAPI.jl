@@ -18,10 +18,11 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v1
-      - name: Install Runic
-        run: julia -e 'using Pkg; Pkg.add("Runic")'
+      # issue #33: Resolve formatting through the same environment as package tests.
+      - name: Instantiate test environment
+        run: julia --project=test -e 'using Pkg; Pkg.instantiate()'
       - name: Check formatting
-        run: julia -e 'using Runic; Runic.main(["--check", "src/", "test/", "docs/"])'
+        run: julia --project=test -e 'using Runic; Runic.main(["--check", "src/", "test/", "docs/"])'
 
   test:
     name: Test (${{ matrix.version }}; ${{ matrix.os }} ${{ matrix.arch }})
