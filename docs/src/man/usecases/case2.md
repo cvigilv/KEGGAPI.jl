@@ -15,17 +15,17 @@ using DataFrames
 
 ```@example case2
 rxns = KEGGAPI.kegg_link("reaction", "ec:3.2.1.14")
-DataFrame(rxns.data, rxns.colnames)
+DataFrame(rxns)
 ```
 
 ## 2. Reaction information
 
-The second column of `rxns.data` holds the reaction identifiers (`rn:R…`). Pass
-them to [`kegg_get`](@ref) to retrieve the full entries; `.data` is a vector with
-one flat-file `String` per reaction:
+`rxns.columns.target_id` holds the reaction identifiers (`rn:R…`). Pass them to
+[`kegg_get`](@ref) to retrieve the full entries. The `kegg_get` result's `.data`
+is a vector with one flat-file `String` per reaction:
 
 ```@example case2
-info = KEGGAPI.kegg_get(rxns.data[2])
+info = KEGGAPI.kegg_get(rxns.columns.target_id)
 println(join(first(split(info.data[1], "\n"), 6), "\n"))
 ```
 
@@ -33,13 +33,13 @@ println(join(first(split(info.data[1], "\n"), 6), "\n"))
 
 ```@example case2
 cpds = KEGGAPI.kegg_link("compound", "rn:R01206")
-DataFrame(cpds.data, cpds.colnames)
+DataFrame(cpds)
 ```
 
 Retrieve the compound entries the same way as the reactions:
 
 ```@example case2
-cpd_info = KEGGAPI.kegg_get(cpds.data[2])
+cpd_info = KEGGAPI.kegg_get(cpds.columns.target_id)
 println(join(first(split(cpd_info.data[1], "\n"), 6), "\n"))
 ```
 
@@ -59,5 +59,5 @@ end
 
 ```@example case2
 ko = KEGGAPI.kegg_link("ko", "rn:R01206")
-DataFrame(ko.data, ko.colnames)
+DataFrame(ko)
 ```
