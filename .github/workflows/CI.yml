@@ -27,6 +27,10 @@ jobs:
   test:
     name: Test (${{ matrix.version }}; ${{ matrix.os }} ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
+    # issue #32: Codecov uses OIDC for trusted runs and tokenless uploads for forks.
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -49,10 +53,13 @@ jobs:
         timeout-minutes: 10
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.version == '1.10' && matrix.os == 'ubuntu-latest'
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v7
         if: matrix.version == '1.10' && matrix.os == 'ubuntu-latest'
         with:
+          use_oidc: true
           files: lcov.info
+          disable_search: true
+          fail_ci_if_error: true
   docs:
     name: Documentation
     runs-on: ubuntu-latest
