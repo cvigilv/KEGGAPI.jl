@@ -10,6 +10,12 @@
 
 KEGGAPI.jl is a Julia package for accesing the Kyoto Encyclopedia of Genes and Genomes, striving to take advantage of the speed and flexibility that Julia offers and make it accessible to the bioinformatics and functional annotation communities.
 
+## KEGG usage terms
+
+KEGG makes its REST service at `rest.kegg.jp` available only for academic use by academic users. Read KEGG's [REST restriction notice](https://www.kegg.jp/kegg/rest/) and [legal terms](https://www.kegg.jp/kegg/legal.html), including its licensing requirements for non-academic use.
+
+KEGGAPI.jl's MIT license covers only the Julia client code. It does not grant any rights to KEGG data or services.
+
 ## Installation
 
 ```julia
