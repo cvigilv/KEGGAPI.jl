@@ -41,32 +41,32 @@ using Test
 
     @testset "list" begin
         kegg_pathways = KEGGAPI.kegg_list("pathway")
-        @test isa(kegg_pathways, KEGGAPI.KeggTupleList)
-        @test length(kegg_pathways.data) > 0
+        @test isa(kegg_pathways, KeggTable)
+        @test !isempty(kegg_pathways.columns.id)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_list("fail")
         sleep(0.4)
     end
 
     @testset "find" begin
         kegg_find_pathway = KEGGAPI.kegg_find("pathway", "glycolysis")
-        @test isa(kegg_find_pathway, KEGGAPI.KeggTupleList)
-        @test length(kegg_find_pathway.data) > 0
+        @test isa(kegg_find_pathway, KeggTable)
+        @test !isempty(kegg_find_pathway.columns.id)
         sleep(0.4)
 
         kegg_find_compound = KEGGAPI.kegg_find("compound", "glucose")
-        @test isa(kegg_find_compound, KEGGAPI.KeggTupleList)
-        @test length(kegg_find_compound.data) > 0
+        @test isa(kegg_find_compound, KeggTable)
+        @test !isempty(kegg_find_compound.columns.id)
         sleep(0.4)
 
         kegg_find_genes = KEGGAPI.kegg_find("genes", "glycolysis")
-        @test isa(kegg_find_genes, KEGGAPI.KeggTupleList)
-        @test length(kegg_find_genes.data) > 0
+        @test isa(kegg_find_genes, KeggTable)
+        @test !isempty(kegg_find_genes.columns.id)
         sleep(0.4)
 
         # Databases beyond the old whitelist now work (e.g. ko/enzyme)
         kegg_find_ko = KEGGAPI.kegg_find("ko", "kinase")
-        @test isa(kegg_find_ko, KEGGAPI.KeggTupleList)
-        @test length(kegg_find_ko.data[1]) > 0
+        @test isa(kegg_find_ko, KeggTable)
+        @test !isempty(kegg_find_ko.columns.id)
         sleep(0.4)
 
         # `option` is only valid for compound/drug, and must be a known option
@@ -84,16 +84,16 @@ using Test
 
     @testset "conv" begin
         r = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) > 0
+        @test isa(r, KeggTable)
+        @test !isempty(r.columns.source_id)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", "ncbi-geneid")
         sleep(0.4)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("eco", "fail")
         sleep(0.4)
 
         r = KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) > 0
+        @test isa(r, KeggTable)
+        @test !isempty(r.columns.source_id)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", ["hsa:10458", "ece:Z5100"])
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("ncbi-proteinid", ["foo", "bar", "baz"])
         sleep(0.4)
@@ -101,21 +101,21 @@ using Test
 
     @testset "link" begin
         r = KEGGAPI.kegg_link("pathway", "hsa")
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) > 0
+        @test isa(r, KeggTable)
+        @test !isempty(r.columns.source_id)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", "hsa"); sleep(0.4)
 
         r = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) > 0
+        @test isa(r, KeggTable)
+        @test !isempty(r.columns.source_id)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("pathway", ["foo", "bar", "baz"]); sleep(0.4)
 
-        # RDF output option returns the raw response text instead of a KeggTupleList
+        # RDF output option returns the raw response text instead of a KeggTable
         r = KEGGAPI.kegg_link("atc", "D00564", "turtle")
         @test isa(r, String)
         @test occursin("@prefix", r)
@@ -124,14 +124,14 @@ using Test
 
     @testset "ddi" begin
         r = KEGGAPI.kegg_ddi("D00564")
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) == 4
-        @test length(r.data[1]) > 0
+        @test isa(r, KeggTable)
+        @test length(r.columns) == 4
+        @test !isempty(r.columns.entry1)
         sleep(0.4)
 
         r = KEGGAPI.kegg_ddi(["D00564", "D00100"])
-        @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data[1]) > 0
+        @test isa(r, KeggTable)
+        @test !isempty(r.columns.entry1)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_ddi("fail")

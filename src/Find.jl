@@ -16,7 +16,7 @@ const KEGG_FIND_OPTIONS = ["formula", "exact_mass", "mol_weight", "nop"]
 const KEGG_FIND_OPTION_DATABASES = ("compound", "drug")
 
 """
-    kegg_find(database::String, query::String, option::String = "") -> KeggTupleList
+    kegg_find(database::String, query::String, option::String = "") -> KeggTable
 
 Find entries with a matching query keyword or other query data.
 
@@ -40,8 +40,7 @@ Allowed `option` values (only for the `compound` and `drug` databases):
   chemical field. `nop` disables keyword pre-processing.
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data`
-  retrieved, and the `colnames`.
+- `KeggTable`: A table with `id` and `details` columns.
 
 # Examples
 ```julia

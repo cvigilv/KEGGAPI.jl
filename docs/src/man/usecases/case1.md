@@ -25,7 +25,7 @@ Only identifiers with a hit in KEGG are returned:
 
 ```@example case1
 conv = KEGGAPI.kegg_conv("genes", "uniprot:A0A072UR65")
-DataFrame(conv.data, conv.colnames)
+DataFrame(conv)
 ```
 
 Several identifiers from the same database can be converted in one call by
@@ -38,14 +38,14 @@ using CSV
 df = DataFrame(CSV.File("subset_data.csv"))
 entries = string.("uniprot:", df.Entry)
 conv = KEGGAPI.kegg_conv("genes", entries)
-DataFrame(conv.data, conv.colnames)
+DataFrame(conv)
 ```
 
 The reverse direction (KEGG → outside database) works the same way:
 
 ```@example case1
 conv = KEGGAPI.kegg_conv("ncbi-proteinid", "mtr:25493984")
-DataFrame(conv.data, conv.colnames)
+DataFrame(conv)
 ```
 
 ## 2. Retrieve the gene entry
@@ -82,21 +82,21 @@ group for the gene:
 
 ```@example case1
 ko = KEGGAPI.kegg_link("ko", "mtr:25493984")
-DataFrame(ko.data, ko.colnames)
+DataFrame(ko)
 ```
 
 Reactions associated with that ortholog:
 
 ```@example case1
 rxns = KEGGAPI.kegg_link("reaction", "K01183")
-DataFrame(rxns.data, rxns.colnames)
+DataFrame(rxns)
 ```
 
 Pathways the gene participates in:
 
 ```@example case1
 paths = KEGGAPI.kegg_link("pathway", "mtr:25493984")
-DataFrame(paths.data, paths.colnames)
+DataFrame(paths)
 ```
 
 ## 5. All genes in an orthology group
@@ -106,12 +106,12 @@ every member gene across organisms:
 
 ```@example case1
 ko_genes = KEGGAPI.kegg_link("genes", "K01183")
-first(DataFrame(ko_genes.data, ko_genes.colnames), 5)
+first(DataFrame(ko_genes), 5)
 ```
 
-The second column of `ko_genes.data` is a vector of gene identifiers that can be
-fed straight back into `kegg_get(...; :aaseq)` or `:ntseq` to build, for example,
-a multiple-sequence-alignment input.
+`ko_genes.columns.target_id` is a vector of gene identifiers that can be fed
+straight back into `kegg_get(...; :aaseq)` or `:ntseq` to build, for example, a
+multiple-sequence-alignment input.
 
 ## 6. Download a pathway map
 
