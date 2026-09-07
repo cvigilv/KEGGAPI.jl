@@ -8,6 +8,16 @@ The interface allows the functional annotation of genes, identification of metab
 and pathways, the exploration of reaction/pathway prevalence at different taxonomic levels and
 the identification of orthologous proteins for further analysis.
 
+## KEGG usage terms
+
+KEGG makes its REST service at `rest.kegg.jp` available only for academic use by academic users.
+Read KEGG's [REST restriction notice](https://www.kegg.jp/kegg/rest/) and
+[legal terms](https://www.kegg.jp/kegg/legal.html), including its licensing requirements for
+non-academic use.
+
+KEGGAPI.jl's MIT license covers only the Julia client code. It does not grant any rights to KEGG
+data or services.
+
 KEGGAPI.jl aims to support all KEGG API endpoints provided by the
 ["KEGGREST"](https://bioconductor.org/packages/release/bioc/html/KEGGREST.html) package for R
 (Tenenbaum and maintainers, 2025) and the
