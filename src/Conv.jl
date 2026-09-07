@@ -1,5 +1,5 @@
 """
-    kegg_conv(target_db::String, source_db::String)
+    kegg_conv(target_db::String, source_db::String) -> KeggTable
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -37,7 +37,7 @@ end
 
 
 """
-    kegg_conv(target_db::String, dbentries::Vector{String}; [timeout::Float64 = 0.4])
+    kegg_conv(target_db::String, dbentries::Vector{String}; [timeout::Float64 = 0.4]) -> KeggTable
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -66,16 +66,12 @@ KEGGAPI.conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
 """
 function kegg_conv(target_db::String, dbentries::Vector{String}; timeout::Float64 = 0.4)
     urls = String[]
-    data = []
+    responses = String[]
     for chunk in chunk_vector(dbentries, 10)
         url = "https://rest.kegg.jp/conv/$(target_db)/$(join(chunk, "+"))"
         push!(urls, url)
-        response_text = request(url)
-        for datum in eachline(IOBuffer(response_text))
-            id, d = split(datum, '\t') .|> String
-            push!(data, [id, d])
-        end
+        push!(responses, request(url))
         sleep(timeout)
     end
-    return KeggTupleList(urls, ["source", target_db], data)
+    return conv_parser(join(responses, '\n'), urls)
 end

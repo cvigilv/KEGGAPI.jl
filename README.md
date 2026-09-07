@@ -41,8 +41,11 @@ operations:
 using KEGGAPI
 
 result = kegg_find("compound", "glucose")
-result.colnames    # column names
-result.data        # retrieved data
+result.columns.id       # KEGG compound identifiers
+result.columns.details  # matching names and descriptions
+
+# Tables.jl consumers accept results directly:
+# DataFrame(result)
 ```
 
 ## Documentation

@@ -1,8 +1,10 @@
 module KEGGAPI
 
 import HTTP: get
+import Tables
 
 include("utils.jl")
+include("Structures.jl")
 include("Conv.jl")
 include("Ddi.jl")
 include("Find.jl")
@@ -12,9 +14,9 @@ include("Link.jl")
 include("List.jl")
 include("Parsers.jl")
 include("Requests.jl")
-include("Structures.jl")
 
 export @kegg_str,
+    KeggTable,
     kegg_conv,
     kegg_ddi,
     kegg_find,

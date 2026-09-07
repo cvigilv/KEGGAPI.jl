@@ -15,13 +15,13 @@ the `compound` database and the compound name:
 
 ```@example case3
 hits = KEGGAPI.kegg_find("compound", "chitin")
-DataFrame(hits.data, hits.colnames)
+DataFrame(hits)
 ```
 
 ## 2. Retrieve the compound entry
 
-The first column of `hits.data` holds the compound identifiers (`cpd:C…`). Fetch
-the full entry with [`kegg_get`](@ref):
+`hits.columns.id` holds the compound identifiers (`cpd:C…`). Fetch the full
+entry with [`kegg_get`](@ref):
 
 ```@example case3
 cpd = KEGGAPI.kegg_get("cpd:C00461")
@@ -47,15 +47,15 @@ in:
 
 ```@example case3
 rxns = KEGGAPI.kegg_link("reaction", "cpd:C00461")
-DataFrame(rxns.data, rxns.colnames)
+DataFrame(rxns)
 ```
 
 ## 5. Reaction information
 
-Feed the reaction identifiers (the second column of `rxns.data`) back into
-`kegg_get` to retrieve their entries:
+Feed the reaction identifiers in `rxns.columns.target_id` back into `kegg_get`
+to retrieve their entries:
 
 ```@example case3
-info = KEGGAPI.kegg_get(rxns.data[2])
+info = KEGGAPI.kegg_get(rxns.columns.target_id)
 println(join(first(split(info.data[1], "\n"), 6), "\n"))
 ```
