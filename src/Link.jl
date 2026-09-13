@@ -5,7 +5,7 @@ const KEGG_LINK_RDF_OPTIONS = ("turtle", "n-triple")
 
 # ---------------------------------------------------------------------------- Main functions
 """
-    kegg_link(target_db::String, source_db::String, option::String = "") -> Union{KeggTable, String}
+    kegg_link(target_db::String, source_db::String, option::String = "") -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -27,7 +27,11 @@ and the available external databases are:
   links a taxonomic rank may be given (`species | genus | family | order | class
   | phylum`). For the `drug`/`atc`/`jtc` databases an RDF output format may be
   requested (`turtle | n-triple`), in which case the raw response text is
-  returned instead of a `KeggTable`.
+  returned instead of a `KeggTupleList`.
+
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+- `String`: Raw RDF when `option` is `"turtle"` or `"n-triple"`.
 
 # Examples
 ```julia
@@ -53,7 +57,7 @@ function kegg_link(target_db::String, source_db::String, option::String = "")
 end
 
 """
-    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; [timeout::Float64 = 0.4]) -> Union{KeggTable, String}
+    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; [timeout::Float64 = 0.4]) -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -77,21 +81,33 @@ and the available external databases are:
   links, or an RDF output format (`turtle | n-triple`) for the `drug`/`atc`/`jtc`
   databases (in which case the raw response text is returned).
 - `timeout::Float64`, time to wait between requests (default: 0.4 seconds)
+
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+- `String`: Raw RDF when `option` is `"turtle"` or `"n-triple"`.
 """
 function kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; timeout::Float64 = 0.4)
     option_str = isempty(option) ? "" : "/$option"
     is_rdf = option in KEGG_LINK_RDF_OPTIONS
 
     urls = String[]
-    responses = String[]
+    data = []
+    rdf_text = ""
     for chunk in chunk_vector(dbentries, 10)
         url = "https://rest.kegg.jp/link/$(target_db)/$(join(chunk, "+"))$option_str"
         push!(urls, url)
-        push!(responses, request(url))
+        response_text = request(url)
+        if is_rdf
+            rdf_text *= response_text
+        else
+            for datum in eachline(IOBuffer(response_text))
+                id, d = split(datum, '\t') .|> String
+                push!(data, [id, d])
+            end
+        end
         sleep(timeout)
     end
 
-    response_text = join(responses, '\n')
-    is_rdf && return response_text
-    return conv_parser(response_text, urls)
+    is_rdf && return rdf_text
+    return KeggTupleList(urls, ["Source ID", "Target ID"], data)
 end

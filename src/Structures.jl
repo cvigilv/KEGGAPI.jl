@@ -1,69 +1,52 @@
 ## Types returned by the KEGG API
 
-# This type represents a KEGG API request error.
+"""
+    RequestError(message::String)
+
+An error reported while requesting data from the KEGG REST API.
+"""
 struct RequestError <: Exception
     message::String
 end
 
 """
-    KeggTable(url, columns::NamedTuple)
+    KeggTupleList(url, colnames, data)
 
-Tabular data returned by a KEGG REST operation.
+A tabular KEGG result and the URL or URLs used to retrieve it.
 
-`url` is the request URL, or a vector of request URLs when KEGGAPI split a
-request into batches. `columns` is a named tuple of equally sized vectors. Its
-keys are stable `Symbol` column names.
-
-`KeggTable` implements the Tables.jl column-access interface, so table consumers
-can use it directly. For example, `DataFrame(result)` constructs a data frame
-without KEGGAPI depending on DataFrames.jl.
-
-The old `.data` and `.colnames` properties remain available during the 1.x
-release series. They are deprecated in favor of `.columns` and
-`Tables.columnnames(result)`.
+`colnames` identifies the fields in each row; `missing` marks fields without a
+stable label. `data` is a vector of rows, and every row stores one string for
+each entry in `colnames`. The result supports iteration, indexing, and the usual
+length queries by delegating to `data`.
 """
-struct KeggTable{U, C <: NamedTuple}
-    url::U
-    columns::C
-
-    function KeggTable(url::U, columns::C) where {U, C <: NamedTuple}
-        all(column -> column isa AbstractVector, values(columns)) ||
-            throw(ArgumentError("every KeggTable column must be an AbstractVector"))
-
-        column_lengths = map(length, values(columns))
-        if !isempty(column_lengths) && !all(==(first(column_lengths)), column_lengths)
-            throw(ArgumentError("all KeggTable columns must have the same length"))
-        end
-
-        return new{U, C}(url, columns)
-    end
+mutable struct KeggTupleList
+    url::Union{String, Vector{String}}
+    colnames::Vector{Union{String, Missing}}
+    data::Vector{Any}
 end
 
-# issue #26: all tabular results expose the same column-oriented Tables.jl contract.
-Tables.istable(::Type{<:KeggTable}) = true
-Tables.columnaccess(::Type{<:KeggTable}) = true
-Tables.columns(table::KeggTable) = getfield(table, :columns)
-Tables.columnnames(table::KeggTable) = keys(getfield(table, :columns))
-Tables.getcolumn(table::KeggTable, index::Int) = getfield(table, :columns)[index]
-Tables.getcolumn(table::KeggTable, name::Symbol) = getproperty(getfield(table, :columns), name)
-Tables.schema(table::KeggTable) = Tables.Schema(
-    keys(getfield(table, :columns)),
-    map(eltype, values(getfield(table, :columns)))
-)
+"""
+    KeggGenesList(url, colnames, data)
 
-function Base.getproperty(table::KeggTable, name::Symbol)
-    if name === :data
-        Base.depwarn("`.data` is deprecated; use `.columns` or `Tables.columns(result)` instead", :data)
-        return collect(values(getfield(table, :columns)))
-    elseif name === :colnames
-        Base.depwarn("`.colnames` is deprecated; use `Tables.columnnames(result)` instead", :colnames)
-        return collect(String.(keys(getfield(table, :columns))))
-    end
-    return getfield(table, name)
+A genomic-feature result returned by `kegg_list(query, "genes")`.
+
+`colnames` names the fields in each row. `data` is a vector of rows, and every
+row stores one string for each entry in `colnames`. The result supports
+iteration, indexing, and the usual length queries by delegating to `data`.
+"""
+mutable struct KeggGenesList
+    url::String
+    colnames::Vector{String}
+    data::Vector{Any}
 end
 
-Base.propertynames(::KeggTable, ::Bool = false) = (:url, :columns, :data, :colnames)
+const KeggList = Union{KeggTupleList, KeggGenesList}
 
-# Keep the old type names as aliases while callers migrate to KeggTable.
-const KeggTupleList = KeggTable
-const KeggGenesList = KeggTable
+# issue #24: every tabular result exposes rows through the same native interface.
+Base.length(result::KeggList) = length(result.data)
+Base.isempty(result::KeggList) = isempty(result.data)
+Base.firstindex(result::KeggList) = firstindex(result.data)
+Base.lastindex(result::KeggList) = lastindex(result.data)
+Base.getindex(result::KeggList, index::Int) = result.data[index]
+Base.iterate(result::KeggList) = iterate(result.data)
+Base.iterate(result::KeggList, state::Int) = iterate(result.data, state)

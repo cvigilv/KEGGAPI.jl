@@ -1,8 +1,5 @@
-using HTTP
-
 """
-    kegg_list(database::String) -> KeggTable
-    kegg_list(query::String, query_type::String) -> KeggTable
+    kegg_list(query::String, query_type::String = "") -> Union{KeggTupleList, KeggGenesList}
 
 Get a list of entry identifiers and associated names
 
@@ -16,9 +13,10 @@ drug     | dgroup
 
 # Returns
 
-- `KeggTable`: A table with `id` and `details` columns. Calls with `query_type =
-  "genes"` instead return `id`, `type`, `chromosomal_position`, and `gene_name`
-  columns.
+- `KeggTupleList`: Rows whose first field is `ID`. Two-field responses also name
+  the second field `Details`; additional fields are left unnamed.
+- `KeggGenesList`: Rows with `ID`, `Type`, `Chromosomal Position`, and `Gene Name`
+  fields when `query_type` is `"genes"`.
 
 # Extended help
 
@@ -48,25 +46,10 @@ function kegg_list(query::String, query_type::String = "")
         response_text = KEGGAPI.request(url)
         result = genomic_feature_parser(response_text, url)
     else
-        ids = String[]
-        details = String[]
         url *= "/$query_type"
-        try
-            HTTP.open(:GET, url) do stream
-                while !eof(stream)
-                    chunk = readavailable(stream) |> String
-                    for line in eachline(IOBuffer(chunk))
-                        fields = split(line, '\t')
-                        length(fields) == 2 || continue
-                        push!(ids, fields[1])
-                        push!(details, fields[2])
-                    end
-                end
-            end
-            result = KeggTable(url, (id = ids, details = details))
-        catch e
-            throw(KEGGAPI.RequestError("Failed to retrieve data from KEGG API: $(e)"))
-        end
+        # issue #28: parse the complete response so network chunks cannot split rows.
+        response_text = KEGGAPI.request(url)
+        result = tuple_parser(response_text, url)
     end
 
     # Return the parsed data or an empty array if the data is not available.
@@ -74,7 +57,7 @@ function kegg_list(query::String, query_type::String = "")
 end
 
 """
-    kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4) -> KeggTable
+    kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4) -> KeggTupleList
 
 Get a list of entry identifiers and associated names
 
@@ -82,7 +65,7 @@ Get a list of entry identifiers and associated names
 - `dbentries::Vector{String}`: The list of entries to list.
 
 # Returns
-- `KeggTable`: A table with `id` and `details` columns.
+- `KeggTupleList`: Rows with `ID` and `Details` fields.
 
 # Extended help
 
@@ -93,12 +76,16 @@ is 3, so a default timeout of 0.4 seconds is set to ensure that).
 """
 function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
     urls = String[]
-    responses = String[]
+    data = []
     for chunk in chunk_vector(dbentries, 10)
         url = "https://rest.kegg.jp/list/$(join(chunk, "+"))"
         push!(urls, url)
-        push!(responses, request(url))
+        response_text = request(url)
+        for datum in eachline(IOBuffer(response_text))
+            id, d = split(datum, '\t') .|> String
+            push!(data, [id, d])
+        end
         sleep(timeout)
     end
-    return tuple_parser(join(responses, '\n'), urls)
+    return KeggTupleList(urls, ["ID", "Details"], data)
 end

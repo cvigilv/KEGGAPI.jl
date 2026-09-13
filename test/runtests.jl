@@ -1,5 +1,5 @@
 using KEGGAPI
 using Test
 
-include("test_tables.jl")
+include("test_structures.jl")
 include("test_requests.jl")
