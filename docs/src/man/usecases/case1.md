@@ -7,6 +7,11 @@ sequences, orthology group, reactions and pathways.
 ```@setup case1
 using KEGGAPI
 using DataFrames
+
+as_dataframe(result) = DataFrame(
+    reduce(vcat, permutedims.(result.data)),
+    Symbol.(result.colnames),
+)
 ```
 
 ## 1. Convert an outside identifier to a KEGG identifier
@@ -25,7 +30,7 @@ Only identifiers with a hit in KEGG are returned:
 
 ```@example case1
 conv = KEGGAPI.kegg_conv("genes", "uniprot:A0A072UR65")
-DataFrame(conv.data, conv.colnames)
+as_dataframe(conv)
 ```
 
 Several identifiers from the same database can be converted in one call by
@@ -38,14 +43,14 @@ using CSV
 df = DataFrame(CSV.File("subset_data.csv"))
 entries = string.("uniprot:", df.Entry)
 conv = KEGGAPI.kegg_conv("genes", entries)
-DataFrame(conv.data, conv.colnames)
+as_dataframe(conv)
 ```
 
 The reverse direction (KEGG → outside database) works the same way:
 
 ```@example case1
 conv = KEGGAPI.kegg_conv("ncbi-proteinid", "mtr:25493984")
-DataFrame(conv.data, conv.colnames)
+as_dataframe(conv)
 ```
 
 ## 2. Retrieve the gene entry
@@ -82,21 +87,21 @@ group for the gene:
 
 ```@example case1
 ko = KEGGAPI.kegg_link("ko", "mtr:25493984")
-DataFrame(ko.data, ko.colnames)
+as_dataframe(ko)
 ```
 
 Reactions associated with that ortholog:
 
 ```@example case1
 rxns = KEGGAPI.kegg_link("reaction", "K01183")
-DataFrame(rxns.data, rxns.colnames)
+as_dataframe(rxns)
 ```
 
 Pathways the gene participates in:
 
 ```@example case1
 paths = KEGGAPI.kegg_link("pathway", "mtr:25493984")
-DataFrame(paths.data, paths.colnames)
+as_dataframe(paths)
 ```
 
 ## 5. All genes in an orthology group
@@ -106,12 +111,12 @@ every member gene across organisms:
 
 ```@example case1
 ko_genes = KEGGAPI.kegg_link("genes", "K01183")
-first(DataFrame(ko_genes.data, ko_genes.colnames), 5)
+first(as_dataframe(ko_genes), 5)
 ```
 
-The second column of `ko_genes.data` is a vector of gene identifiers that can be
-fed straight back into `kegg_get(...; :aaseq)` or `:ntseq` to build, for example,
-a multiple-sequence-alignment input.
+The second field in each `ko_genes` row is a gene identifier. Collect those
+fields with `[row[2] for row in ko_genes]`, then pass them to `kegg_get` with
+`:aaseq` or `:ntseq` to build, for example, a multiple-sequence-alignment input.
 
 ## 6. Download a pathway map
 

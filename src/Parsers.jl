@@ -1,127 +1,64 @@
-function tuple_parser(response_text::String, url::String, colnames::Vector{String} = ["ID", "Details"])
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    id = String[]
-    name = String[]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 2 || continue  # NOTE: Skip rows with less than 2 columns
-        push!(id, fields[1])
-        push!(name, fields[2])
+function tabular_rows(response_text::String)
+    data = Any[]
+    for line in eachline(IOBuffer(response_text))
+        isempty(line) && continue
+        push!(data, String.(split(line, '\t')))
     end
-
-    return KeggTupleList(
-        url,
-        colnames,
-        [id, name]
-    )
+    return data
 end
 
+function validate_row_width(data::Vector{Any}, column_count::Int)
+    for (index, row) in pairs(data)
+        length(row) == column_count || throw(
+            RequestError(
+                "KEGG returned $(length(row)) fields in row $index; expected $column_count"
+            )
+        )
+    end
+    return data
+end
+
+function inferred_colnames(column_count::Int)
+    column_count == 0 && return Union{String, Missing}[]
+    column_count == 1 && return Union{String, Missing}["ID"]
+    column_count == 2 && return Union{String, Missing}["ID", "Details"]
+    return Union{String, Missing}["ID"; fill(missing, column_count - 1)]
+end
+
+function tuple_parser(response_text::String, url::String)
+    data = tabular_rows(response_text)
+    column_count = isempty(data) ? 0 : length(first(data))
+    validate_row_width(data, column_count)
+    return KeggTupleList(url, inferred_colnames(column_count), data)
+end
+
+function tuple_parser(response_text::String, url::String, colnames::Vector{String})
+    data = tabular_rows(response_text)
+    validate_row_width(data, length(colnames))
+    return KeggTupleList(url, colnames, data)
+end
 
 function pathway_parser(response_text::String, url::String)
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    id = String[]
-    name = String[]
     colnames = ["ID", "Pathway"]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 2 || continue  # NOTE: Skip rows with less than 2 columns
-        push!(id, fields[1])
-        push!(name, fields[2])
-    end
-
-    return KeggTupleList(
-        url,
-        colnames,
-        [id, name]
-    )
+    return tuple_parser(response_text, url, colnames)
 end
 
 function conv_parser(response_text::String, url::String)
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    target_ids = String[]
-    source_ids = String[]
-    colnames = ["Target ID", "Source ID"]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 2 || continue  # NOTE: Skip rows with less than 4 columns
-        push!(target_ids, fields[1])
-        push!(source_ids, fields[2])
-    end
-
-    return KeggTupleList(
-        url,
-        colnames,
-        [target_ids, source_ids]
-    )
+    # KEGG response rows contain the source identifier before the target identifier.
+    colnames = ["Source ID", "Target ID"]
+    return tuple_parser(response_text, url, colnames)
 end
 
 function ddi_parser(response_text::String, url::Union{String, Vector{String}})
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    entry1 = String[]
-    entry2 = String[]
-    interaction_type = String[]
-    mechanism = String[]
     colnames = ["Entry 1", "Entry 2", "Interaction Type", "Mechanism"]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 4 || continue  # NOTE: Skip rows without the 4 expected columns
-        push!(entry1, fields[1])
-        push!(entry2, fields[2])
-        push!(interaction_type, fields[3])
-        push!(mechanism, fields[4])
-    end
-
-    return KeggTupleList(
-        url,
-        colnames,
-        [entry1, entry2, interaction_type, mechanism]
-    )
+    data = tabular_rows(response_text)
+    validate_row_width(data, length(colnames))
+    return KeggTupleList(url, colnames, data)
 end
 
 function genomic_feature_parser(response_text::String, url::String)
-    # Split the response into lines
-    lines = split(response_text, "\n")
-
-    # Initialize the arrays
-    id = String[]
-    type = String[]
-    chromosomal_position = String[]
-    gene_name = String[]
     colnames = ["ID", "Type", "Chromosomal Position", "Gene Name"]
-
-    # Loop through the lines and split them into fields
-    for line in lines
-        fields = split(line, "\t")
-        length(fields) == 4 || continue  # NOTE: Skip rows with less than 4 columns
-        push!(id, fields[1])
-        push!(type, fields[2])
-        push!(chromosomal_position, fields[3])
-        push!(gene_name, fields[4])
-    end
-
-    return KeggGenesList(
-        url,
-        colnames,
-        [id, type, chromosomal_position, gene_name]
-    )
+    data = tabular_rows(response_text)
+    validate_row_width(data, length(colnames))
+    return KeggGenesList(url, colnames, data)
 end

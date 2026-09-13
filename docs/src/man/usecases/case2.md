@@ -6,6 +6,11 @@ associated KEGG reactions, their compounds, and the orthology group.
 ```@setup case2
 using KEGGAPI
 using DataFrames
+
+as_dataframe(result) = DataFrame(
+    reduce(vcat, permutedims.(result.data)),
+    Symbol.(result.colnames),
+)
 ```
 
 ## 1. Reactions associated with an EC number
@@ -15,17 +20,17 @@ using DataFrames
 
 ```@example case2
 rxns = KEGGAPI.kegg_link("reaction", "ec:3.2.1.14")
-DataFrame(rxns.data, rxns.colnames)
+as_dataframe(rxns)
 ```
 
 ## 2. Reaction information
 
-The second column of `rxns.data` holds the reaction identifiers (`rn:R…`). Pass
+The second field in each `rxns` row holds a reaction identifier (`rn:R…`). Pass
 them to [`kegg_get`](@ref) to retrieve the full entries; `.data` is a vector with
 one flat-file `String` per reaction:
 
 ```@example case2
-info = KEGGAPI.kegg_get(rxns.data[2])
+info = KEGGAPI.kegg_get([row[2] for row in rxns])
 println(join(first(split(info.data[1], "\n"), 6), "\n"))
 ```
 
@@ -33,13 +38,13 @@ println(join(first(split(info.data[1], "\n"), 6), "\n"))
 
 ```@example case2
 cpds = KEGGAPI.kegg_link("compound", "rn:R01206")
-DataFrame(cpds.data, cpds.colnames)
+as_dataframe(cpds)
 ```
 
 Retrieve the compound entries the same way as the reactions:
 
 ```@example case2
-cpd_info = KEGGAPI.kegg_get(cpds.data[2])
+cpd_info = KEGGAPI.kegg_get([row[2] for row in cpds])
 println(join(first(split(cpd_info.data[1], "\n"), 6), "\n"))
 ```
 
@@ -59,5 +64,5 @@ end
 
 ```@example case2
 ko = KEGGAPI.kegg_link("ko", "rn:R01206")
-DataFrame(ko.data, ko.colnames)
+as_dataframe(ko)
 ```

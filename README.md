@@ -41,8 +41,9 @@ operations:
 using KEGGAPI
 
 result = kegg_find("compound", "glucose")
-result.colnames    # column names
-result.data        # retrieved data
+result.colnames    # names of the fields in each row
+result[1]          # first result row
+result.data        # all result rows
 ```
 
 ## Documentation

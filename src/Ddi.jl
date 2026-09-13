@@ -1,6 +1,6 @@
 """
-    kegg_ddi(dbentry::String)
-    kegg_ddi(dbentries::Vector{String}; [timeout::Float64 = 0.4])
+    kegg_ddi(dbentry::String) -> KeggTupleList
+    kegg_ddi(dbentries::Vector{String}; [timeout::Float64 = 0.4]) -> KeggTupleList
 
 Find adverse drug-drug interactions (DDI).
 
@@ -15,10 +15,9 @@ The available databases are:
   provided (default: 0.4 seconds).
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data`
-  retrieved, and the `colnames`. The columns are `["Entry 1", "Entry 2",
-  "Interaction Type", "Mechanism"]`, where the interaction type is `CI`
-  (contraindication) or `P` (precaution).
+- `KeggTupleList`: Rows with `Entry 1`, `Entry 2`, `Interaction Type`, and
+  `Mechanism` fields. The interaction type is `CI` (contraindication) or `P`
+  (precaution).
 
 # Examples
 ```julia

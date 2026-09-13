@@ -21,8 +21,8 @@ And use the interfaces to query the KEGG API. For example, to list all organisms
 ```@example examples
 result = KEGGAPI.kegg_list("genome");
 ```
-This returns a `KeggTupleList` object with the API call, column names and data. The data can
-accessed by indexing into the respective fields of the object:
+This returns a [`KeggTupleList`](@ref) with the request URL, column names, and
+result rows. Each row has one value for every entry in `colnames`:
 ```@example examples
 result.url
 ```
@@ -32,7 +32,10 @@ result.colnames
 ```
 
 ```@example examples
-result.data
+first(result)
 ```
+
+The full row vector remains available through `result.data`. `KeggTupleList`
+also supports iteration, indexing, `length`, and `isempty` directly.
 
 For more example usage, refer to the [examples](examples.md) page and the [API reference](api.md).

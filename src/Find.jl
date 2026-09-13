@@ -40,8 +40,7 @@ Allowed `option` values (only for the `compound` and `drug` databases):
   chemical field. `nop` disables keyword pre-processing.
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data`
-  retrieved, and the `colnames`.
+- `KeggTupleList`: Rows with `ID` and `Details` fields.
 
 # Examples
 ```julia
@@ -87,5 +86,5 @@ function kegg_find(database::String, query::String, option::String = "")
     end
 
     response_text = request(url)
-    return tuple_parser(response_text, url)
+    return tuple_parser(response_text, url, ["ID", "Details"])
 end

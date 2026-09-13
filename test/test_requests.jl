@@ -1,6 +1,13 @@
 using KEGGAPI
 using Test
 
+function has_row_contract(result)
+    return all(
+        row -> length(row) == length(result.colnames) && all(field -> field isa String, row),
+        result
+    )
+end
+
 @testset verbose = true "API" begin
     @testset "request" begin
         # Test successful request to known working endpoint
@@ -43,6 +50,7 @@ using Test
         kegg_pathways = KEGGAPI.kegg_list("pathway")
         @test isa(kegg_pathways, KEGGAPI.KeggTupleList)
         @test length(kegg_pathways.data) > 0
+        @test has_row_contract(kegg_pathways)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_list("fail")
         sleep(0.4)
     end
@@ -86,6 +94,8 @@ using Test
         r = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
+        @test r.colnames == ["Source ID", "Target ID"]
+        @test has_row_contract(r)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", "ncbi-geneid")
         sleep(0.4)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("eco", "fail")
@@ -94,6 +104,8 @@ using Test
         r = KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
+        @test r.colnames == ["Source ID", "Target ID"]
+        @test has_row_contract(r)
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", ["hsa:10458", "ece:Z5100"])
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("ncbi-proteinid", ["foo", "bar", "baz"])
         sleep(0.4)
@@ -103,6 +115,8 @@ using Test
         r = KEGGAPI.kegg_link("pathway", "hsa")
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
+        @test r.colnames == ["Source ID", "Target ID"]
+        @test has_row_contract(r)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", "hsa"); sleep(0.4)
@@ -110,6 +124,8 @@ using Test
         r = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
+        @test r.colnames == ["Source ID", "Target ID"]
+        @test has_row_contract(r)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
@@ -125,13 +141,15 @@ using Test
     @testset "ddi" begin
         r = KEGGAPI.kegg_ddi("D00564")
         @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data) == 4
-        @test length(r.data[1]) > 0
+        @test length(r.data) > 0
+        @test length(r.data[1]) == 4
+        @test has_row_contract(r)
         sleep(0.4)
 
         r = KEGGAPI.kegg_ddi(["D00564", "D00100"])
         @test isa(r, KEGGAPI.KeggTupleList)
-        @test length(r.data[1]) > 0
+        @test !isempty(r.data)
+        @test has_row_contract(r)
         sleep(0.4)
 
         @test_throws KEGGAPI.RequestError KEGGAPI.kegg_ddi("fail")

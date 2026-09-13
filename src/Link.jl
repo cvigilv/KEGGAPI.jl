@@ -5,7 +5,7 @@ const KEGG_LINK_RDF_OPTIONS = ("turtle", "n-triple")
 
 # ---------------------------------------------------------------------------- Main functions
 """
-    kegg_link(target_db::String, source_db::String, option::String = "")
+    kegg_link(target_db::String, source_db::String, option::String = "") -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -28,6 +28,10 @@ and the available external databases are:
   | phylum`). For the `drug`/`atc`/`jtc` databases an RDF output format may be
   requested (`turtle | n-triple`), in which case the raw response text is
   returned instead of a `KeggTupleList`.
+
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+- `String`: Raw RDF when `option` is `"turtle"` or `"n-triple"`.
 
 # Examples
 ```julia
@@ -53,7 +57,7 @@ function kegg_link(target_db::String, source_db::String, option::String = "")
 end
 
 """
-    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; [timeout::Float64 = 0.4])
+    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; [timeout::Float64 = 0.4]) -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -77,6 +81,10 @@ and the available external databases are:
   links, or an RDF output format (`turtle | n-triple`) for the `drug`/`atc`/`jtc`
   databases (in which case the raw response text is returned).
 - `timeout::Float64`, time to wait between requests (default: 0.4 seconds)
+
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+- `String`: Raw RDF when `option` is `"turtle"` or `"n-triple"`.
 """
 function kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; timeout::Float64 = 0.4)
     option_str = isempty(option) ? "" : "/$option"
@@ -101,5 +109,5 @@ function kegg_link(target_db::String, dbentries::Vector{String}, option::String 
     end
 
     is_rdf && return rdf_text
-    return KeggTupleList(urls, ["source", target_db], data)
+    return KeggTupleList(urls, ["Source ID", "Target ID"], data)
 end

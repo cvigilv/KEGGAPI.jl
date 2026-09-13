@@ -1,5 +1,5 @@
 """
-    kegg_conv(target_db::String, source_db::String)
+    kegg_conv(target_db::String, source_db::String) -> KeggTupleList
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -7,13 +7,16 @@ Convert KEGG identifiers to/from outside identifiers.
 - `target_db::String`: Target database
 - `source_db::String`: Source database
 
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+
 # Examples
 ```julia
 using KEGGAPI
 
-KEGGAPI.conv("eco", "ncbi-geneid")
-KEGGAPI.conv("ncbi-geneid", "eco")
-KEGGAPI.conv("genes", "ncbi-geneid:948364")
+KEGGAPI.kegg_conv("eco", "ncbi-geneid")
+KEGGAPI.kegg_conv("ncbi-geneid", "eco")
+KEGGAPI.kegg_conv("genes", "ncbi-geneid:948364")
 ```
 
 # Extended help
@@ -37,7 +40,7 @@ end
 
 
 """
-    kegg_conv(target_db::String, dbentries::Vector{String}; [timeout::Float64 = 0.4])
+    kegg_conv(target_db::String, dbentries::Vector{String}; [timeout::Float64 = 0.4]) -> KeggTupleList
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -57,11 +60,14 @@ For chemical substance identifiers:
 - `dbentries::Vector{String}`: Database entries of the available databases
 - `timeout::Float64`: Time to wait between requests (default: 0.4 seconds)
 
+# Returns
+- `KeggTupleList`: Rows with `Source ID` and `Target ID` fields.
+
 # Examples
 ```julia
 using KEGGAPI
 
-KEGGAPI.conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
+KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
 ```
 """
 function kegg_conv(target_db::String, dbentries::Vector{String}; timeout::Float64 = 0.4)
@@ -77,5 +83,5 @@ function kegg_conv(target_db::String, dbentries::Vector{String}; timeout::Float6
         end
         sleep(timeout)
     end
-    return KeggTupleList(urls, ["source", target_db], data)
+    return KeggTupleList(urls, ["Source ID", "Target ID"], data)
 end
