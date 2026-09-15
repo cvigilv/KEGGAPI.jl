@@ -18,9 +18,16 @@ error or response in their fields.
 # Examples
 `request` is not exported, so call it with the `KEGGAPI` module prefix.
 
-```julia
-text = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
-image = KEGGAPI.request("https://rest.kegg.jp/get/hsa00010/image", Vector{UInt8})
+```jldoctest
+julia> text = KEGGAPI.request("https://rest.kegg.jp/info/kegg");
+
+julia> occursin("KEGG", text)
+true
+
+julia> image = KEGGAPI.request("https://rest.kegg.jp/get/hsa00010/image", Vector{UInt8});
+
+julia> image[1:8] == UInt8[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+true
 ```
 
 # Arguments

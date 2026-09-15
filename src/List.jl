@@ -1,7 +1,12 @@
 """
     kegg_list(query::String, query_type::String = "") -> Union{KeggTupleList, KeggGenesList}
 
-Get a list of entry identifiers and associated names
+Get a list of entry identifiers and associated names.
+
+# Arguments
+- `query::String`: The KEGG database to list.
+- `query_type::String`: An optional organism code, BRITE prefix, organism group,
+  or taxonomy rank identifier used to narrow the list.
 
 Allowed `database` values are:
 ```
@@ -13,9 +18,18 @@ drug     | dgroup
 
 # Returns
 
-- `KeggTupleList`: Rows from a two-column response, a response with an
-  unrecognized width, or an empty response.
-- `KeggGenesList`: The four columns in an organism-specific gene response.
+- `KeggTupleList`: A two-column response, a response with an unrecognized width,
+  or an empty response, together with its request URL and column names.
+- `KeggGenesList`: The four columns in an organism-specific gene response,
+  together with its request URL and column names.
+
+# Examples
+```jldoctest
+julia> result = kegg_list("pathway", "hsa");
+
+julia> result isa KEGGAPI.KeggTupleList && !isempty(result.data)
+true
+```
 
 # Extended help
 
@@ -33,7 +47,6 @@ family, genus, or species identifier.
 # References
 
 - https://www.kegg.jp/kegg/rest/keggapi.html#list
-```
 """
 function kegg_list(query::String, query_type::String = "")
     return _kegg_list(query, query_type, request)
@@ -49,7 +62,7 @@ end
 """
     kegg_list(dbentries::Vector{String}; request_delay::Real = 0.4, timeout = nothing) -> KeggTupleList
 
-Get a list of entry identifiers and associated names
+Get a list of entry identifiers and associated names.
 
 # Arguments
 - `dbentries::Vector{String}`: The list of entries to list.
@@ -63,8 +76,15 @@ Get a list of entry identifiers and associated names
   and `timeout` conflict.
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data` retrieved,
-  and the `columns` names for the data.
+- `KeggTupleList`: The requested entries, request URLs, and column names.
+
+# Examples
+```jldoctest
+julia> result = kegg_list(["hsa:10458", "hsa:10459"]);
+
+julia> result isa KEGGAPI.KeggTupleList && result.url isa Vector{String} && length(result.data) == 2
+true
+```
 
 # Extended help
 
