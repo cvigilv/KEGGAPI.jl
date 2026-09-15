@@ -5,7 +5,7 @@ const KEGG_LINK_RDF_OPTIONS = ("turtle", "n-triple")
 
 # ---------------------------------------------------------------------------- Main functions
 """
-    kegg_link(target_db::String, source_db::String, option::String = "")
+    kegg_link(target_db::String, source_db::String, option::String = "") -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -29,12 +29,22 @@ and the available external databases are:
   requested (`turtle | n-triple`), in which case the raw response text is
   returned instead of a `KeggTupleList`.
 
-# Examples
-```julia
-using KEGGAPI
+# Returns
+- `KeggTupleList`: The linked identifiers, request URL, and column names for
+  tabular responses.
+- `String`: The raw RDF response when `option` is `"turtle"` or `"n-triple"`.
 
-KEGGAPI.kegg_link("pathway", "hsa")
-KEGGAPI.kegg_link("atc", "D00564", "turtle")   # raw RDF (turtle) String
+# Examples
+```jldoctest
+julia> links = kegg_link("pathway", "hsa:10458");
+
+julia> links isa KEGGAPI.KeggTupleList && !isempty(links.data)
+true
+
+julia> rdf = kegg_link("atc", "D00564", "turtle");
+
+julia> rdf isa String && !isempty(rdf)
+true
 ```
 
 # Extended help
@@ -53,7 +63,7 @@ function kegg_link(target_db::String, source_db::String, option::String = "")
 end
 
 """
-    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; request_delay::Real = 0.4, timeout = nothing)
+    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; request_delay::Real = 0.4, timeout = nothing) -> Union{KeggTupleList, String}
 
 Find related entries by using database cross-references.
 
@@ -81,9 +91,23 @@ and the available external databases are:
 - `timeout::Real`, deprecated alias for `request_delay`. If both keywords are
   supplied, their values must be equal.
 
+# Returns
+- `KeggTupleList`: The linked identifiers, request URLs, and column names for
+  tabular responses.
+- `String`: The concatenated raw RDF responses when `option` is `"turtle"` or
+  `"n-triple"`.
+
 # Throws
 - `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
   and `timeout` conflict.
+
+# Examples
+```jldoctest
+julia> links = kegg_link("pathway", ["hsa:10458", "hsa:10459"]);
+
+julia> links isa KEGGAPI.KeggTupleList && links.url isa Vector{String} && !isempty(links.data)
+true
+```
 
 The vector form sends at most 10 entries per request. It waits `request_delay`
 seconds between requests, but does not wait after the final request.

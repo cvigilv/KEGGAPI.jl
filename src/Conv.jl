@@ -1,5 +1,5 @@
 """
-    kegg_conv(target_db::String, source_db::String)
+    kegg_conv(target_db::String, source_db::String) -> KeggTupleList
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -7,13 +7,16 @@ Convert KEGG identifiers to/from outside identifiers.
 - `target_db::String`: Target database
 - `source_db::String`: Source database
 
-# Examples
-```julia
-using KEGGAPI
+# Returns
+- `KeggTupleList`: The requested identifier mappings, with the request URL and
+  column names.
 
-KEGGAPI.kegg_conv("eco", "ncbi-geneid")
-KEGGAPI.kegg_conv("ncbi-geneid", "eco")
-KEGGAPI.kegg_conv("genes", "ncbi-geneid:948364")
+# Examples
+```jldoctest
+julia> result = kegg_conv("genes", "ncbi-geneid:948364");
+
+julia> result isa KEGGAPI.KeggTupleList && !isempty(result.data)
+true
 ```
 
 # Extended help
@@ -37,7 +40,7 @@ end
 
 
 """
-    kegg_conv(target_db::String, dbentries::Vector{String}; request_delay::Real = 0.4, timeout = nothing)
+    kegg_conv(target_db::String, dbentries::Vector{String}; request_delay::Real = 0.4, timeout = nothing) -> KeggTupleList
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -60,15 +63,20 @@ For chemical substance identifiers:
 - `timeout::Real`: Deprecated alias for `request_delay`. If both keywords are
   supplied, their values must be equal.
 
+# Returns
+- `KeggTupleList`: The requested identifier mappings, request URLs, and column
+  names.
+
 # Throws
 - `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
   and `timeout` conflict.
 
 # Examples
-```julia
-using KEGGAPI
+```jldoctest
+julia> result = kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"]);
 
-KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
+julia> result isa KEGGAPI.KeggTupleList && result.url isa Vector{String} && !isempty(result.data)
+true
 ```
 """
 function kegg_conv(

@@ -16,6 +16,7 @@ only the first few hits:
 
 ```@example case4
 genes = KEGGAPI.kegg_find("genes", "CD19")
+@assert genes isa KEGGAPI.KeggTupleList
 first(DataFrame(genes.data, genes.colnames), 5)
 ```
 
@@ -25,6 +26,7 @@ Retrieve the full entry for the human gene with [`kegg_get`](@ref):
 
 ```@example case4
 gene = KEGGAPI.kegg_get("hsa:930")
+@assert gene.url isa String && gene.data isa String
 println(join(first(split(gene.data, "\n"), 8), "\n"))
 ```
 
@@ -32,6 +34,7 @@ Its orthology (KO) group via [`kegg_link`](@ref):
 
 ```@example case4
 ko = KEGGAPI.kegg_link("ko", "hsa:930")
+@assert ko isa KEGGAPI.KeggTupleList
 DataFrame(ko.data, ko.colnames)
 ```
 
@@ -39,6 +42,7 @@ DataFrame(ko.data, ko.colnames)
 
 ```@example case4
 paths = KEGGAPI.kegg_link("pathway", "hsa:930")
+@assert paths isa KEGGAPI.KeggTupleList
 DataFrame(paths.data, paths.colnames)
 ```
 
@@ -46,6 +50,7 @@ DataFrame(paths.data, paths.colnames)
 
 ```@example case4
 drugs = KEGGAPI.kegg_link("drug", "hsa:930")
+@assert drugs isa KEGGAPI.KeggTupleList
 DataFrame(drugs.data, drugs.colnames)
 ```
 
@@ -54,14 +59,19 @@ second column of `drugs.data`) to `kegg_get`:
 
 ```@example case4
 drug_info = KEGGAPI.kegg_get(drugs.data[2])
+@assert drug_info.url isa Vector{String} && all(item -> item isa String, drug_info.data)
 println(join(first(split(drug_info.data[1], "\n"), 6), "\n"))
 ```
 
 ## 5. Download a pathway map
 
-```julia
+```@example case4
 img = KEGGAPI.kegg_get("hsa04151", :image)
-open("hsa04151.png", "w") do io
+@assert img.data isa Vector{UInt8} && !isempty(img.data)
+path = tempname()
+bytes_written = open(path, "w") do io
     write(io, img.data)
 end
+rm(path)
+bytes_written == length(img.data)
 ```

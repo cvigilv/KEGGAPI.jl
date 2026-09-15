@@ -15,6 +15,7 @@ the `compound` database and the compound name:
 
 ```@example case3
 hits = KEGGAPI.kegg_find("compound", "chitin")
+@assert hits isa KEGGAPI.KeggTupleList
 DataFrame(hits.data, hits.colnames)
 ```
 
@@ -25,6 +26,7 @@ the full entry with [`kegg_get`](@ref):
 
 ```@example case3
 cpd = KEGGAPI.kegg_get("cpd:C00461")
+@assert cpd.url isa String && cpd.data isa String
 println(join(first(split(cpd.data, "\n"), 8), "\n"))
 ```
 
@@ -33,11 +35,15 @@ println(join(first(split(cpd.data, "\n"), 8), "\n"))
 The `:image` option returns the PNG bytes of the compound structure, which you
 can save to disk:
 
-```julia
+```@example case3
 img = KEGGAPI.kegg_get("cpd:C00461", :image)
-open("C00461.png", "w") do io
+@assert img.data isa Vector{UInt8} && !isempty(img.data)
+path = tempname()
+bytes_written = open(path, "w") do io
     write(io, img.data)
 end
+rm(path)
+bytes_written == length(img.data)
 ```
 
 ## 4. Reactions linked to the compound
@@ -47,6 +53,7 @@ in:
 
 ```@example case3
 rxns = KEGGAPI.kegg_link("reaction", "cpd:C00461")
+@assert rxns isa KEGGAPI.KeggTupleList
 DataFrame(rxns.data, rxns.colnames)
 ```
 
@@ -57,5 +64,6 @@ Feed the reaction identifiers (the second column of `rxns.data`) back into
 
 ```@example case3
 info = KEGGAPI.kegg_get(rxns.data[2])
+@assert info.url isa Vector{String} && all(item -> item isa String, info.data)
 println(join(first(split(info.data[1], "\n"), 6), "\n"))
 ```

@@ -1,6 +1,6 @@
 """
-    kegg_ddi(dbentry::String)
-    kegg_ddi(dbentries::Vector{String})
+    kegg_ddi(dbentry::String) -> KeggTupleList
+    kegg_ddi(dbentries::Vector{String}) -> KeggTupleList
 
 Find adverse drug-drug interactions (DDI).
 
@@ -13,20 +13,19 @@ The available databases are:
   NDC or YJ code entries to query for interactions.
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data`
-  retrieved, and the `colnames`. The columns are `["Entry 1", "Entry 2",
-  "Interaction Type", "Mechanism"]`, where the interaction type is `CI`
-  (contraindication) or `P` (precaution).
+- `KeggTupleList`: The interactions, request URL or URLs, and column names. The
+  columns are `["Entry 1", "Entry 2", "Interaction Type", "Mechanism"]`, where
+  the interaction type is `CI` (contraindication) or `P` (precaution).
 
 # Throws
 - `ArgumentError`: If `dbentries` is empty
 
 # Examples
-```julia
-using KEGGAPI
+```jldoctest
+julia> result = kegg_ddi(["D00564", "D00100"]);
 
-KEGGAPI.kegg_ddi("D00564")
-KEGGAPI.kegg_ddi(["D00564", "D00100"])
+julia> result isa KEGGAPI.KeggTupleList && result.colnames == ["Entry 1", "Entry 2", "Interaction Type", "Mechanism"]
+true
 ```
 
 # Extended help

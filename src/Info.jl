@@ -1,5 +1,5 @@
 """
-    KEGGAPI.kegg_info(database::String)
+    kegg_info(database::String) -> String
 
 Get information about a specific database from the KEGG API.
 
@@ -16,23 +16,26 @@ ntmap    | variant | disease | drug    | dgroup
 - `database::String`: The KEGG database for which to retrieve information.
 
 # Returns
-- `data::String`: A string containing the information about the specified database.
+- `String`: Database release information and statistics from KEGG.
 
 # Example
 
-```julia-repl
-KEGGAPI.kegg_info("kegg")
+```jldoctest
+julia> info = kegg_info("kegg");
+
+julia> occursin("KEGG", info)
+true
+```
 
 # Extended help
 
-This operation displays the database release information with statistics for the
-databases shown in the table. Except for :kegg, :genes and :ligand, this operation
-also retrieves the list of linked databases that can be used in the link operation.
+This operation displays database release information and statistics. Except for
+`kegg`, `genes`, and `ligand`, it also returns the linked databases accepted by
+[`kegg_link`](@ref).
 
 # Reference
 
 - https://www.kegg.jp/kegg/rest/keggapi.html#info
-```
 """
 function kegg_info(database::String)
     url = "https://rest.kegg.jp/info/$database"

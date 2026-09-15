@@ -40,16 +40,15 @@ Allowed `option` values (only for the `compound` and `drug` databases):
   chemical field. `nop` disables keyword pre-processing.
 
 # Returns
-- `data::KeggTupleList`: A data structure containing the `url`, the `data`
-  retrieved, and the `colnames`.
+- `KeggTupleList`: The matching identifiers and descriptions, with the request
+  URL and column names.
 
 # Examples
-```julia
-using KEGGAPI
+```jldoctest
+julia> result = kegg_find("compound", "glucose");
 
-KEGGAPI.kegg_find("compound", "glucose")
-KEGGAPI.kegg_find("compound", "C7H10O5", "formula")
-KEGGAPI.kegg_find("ko", "kinase")
+julia> result isa KEGGAPI.KeggTupleList && result.colnames == ["ID", "Details"] && !isempty(result.data)
+true
 ```
 
 # Extended help

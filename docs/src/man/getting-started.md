@@ -11,18 +11,23 @@ pkg> add KEGGAPI
 
 ## Usage
 
-To use KEGGAPI.jl, simply import the package:
+Load KEGGAPI.jl with `using`:
 
 ```@setup examples
 using KEGGAPI
 ```
 
-And use the interfaces to query the KEGG API. For example, to list all organisms (genomes) in KEGG:
+Then call a wrapper for the KEGG operation you need. For example, list all
+organisms in KEGG:
+
 ```@example examples
-result = KEGGAPI.kegg_list("genome");
+result = KEGGAPI.kegg_list("genome")
+@assert result isa KEGGAPI.KeggTupleList
+nothing # hide
 ```
-This returns a `KeggTupleList` object with the API call, column names and data. The data can
-accessed by indexing into the respective fields of the object:
+
+This returns a `KeggTupleList` containing the request URL, column names, and data.
+Access them through the corresponding fields:
 ```@example examples
 result.url
 ```

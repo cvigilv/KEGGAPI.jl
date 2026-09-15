@@ -67,8 +67,8 @@ end
 
 # ---------------------------------------------------------------------------- Main function
 """
-    kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing)
-    kegg_get(dbentry::String, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing)
+    kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing) -> NamedTuple
+    kegg_get(dbentry::String, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing) -> NamedTuple
 
 Retrieve given database entries.
 
@@ -99,16 +99,24 @@ Allowed `option` for retrieval of selected fields:
   and `timeout` conflict.
 
 # Returns
-A tuple containing:
-- `url::Vector{String}`: A vector of URLs used for the API requests.
-- `data::Vector{Any}`: A vector of retrieved data corresponding to the provided database
-  entries, processed according to the specified `option`.
+- For vector input, a named tuple `(url = urls, data = data)`. `urls` is a
+  `Vector{String}` containing one URL per request batch. `data` is a vector with
+  one processed result per retrieved entry.
+- For scalar input, a named tuple `(url = url, data = data)`. `url` is the single
+  request URL. `data` is a `String` for text and sequence formats and a
+  `Vector{UInt8}` for `:image` and `:image2x`.
 
-# Example
-```julia-repl
-dbentries = ["hsa:10458", "hsa:10459", "hsa:10460"]
-option = :aaseq
-urls, data = kegg_get(dbentries, option)
+# Examples
+```jldoctest
+julia> result = kegg_get(["hsa:10458", "hsa:10459"], :aaseq);
+
+julia> (result.url isa Vector{String}, length(result.data), all(item -> item isa String, result.data))
+(true, 2, true)
+
+julia> result = kegg_get("hsa:10458");
+
+julia> (result.url isa String, result.data isa String)
+(true, true)
 ```
 
 # Extended help
@@ -174,17 +182,23 @@ function kegg_get(dbentry::String, args...; kwargs...)
 end
 
 """
-    @kegg_str
+    @kegg_str -> NamedTuple
 
 Macro to retrieve a KEGG database entry flat file from a string. This is intended
 for interactive use in the REPL.
 
 See [`kegg_get`](@ref) for more details on allowed database entries.
 
+# Returns
+- `NamedTuple`: The same `(url = url, data = data)` result as scalar
+  [`kegg_get`](@ref).
+
 # Example
-```julia
-using KEGGAPI
-entry = kegg"hsa:10458"
+```jldoctest
+julia> entry = kegg"hsa:10458";
+
+julia> (entry.url isa String, entry.data isa String)
+(true, true)
 ```
 """
 macro kegg_str(dbentry)
