@@ -47,12 +47,20 @@ function _kegg_list(query::String, query_type::String, request_function::F) wher
 end
 
 """
-    kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4) -> KeggTupleList
+    kegg_list(dbentries::Vector{String}; request_delay::Real = 0.4, timeout = nothing) -> KeggTupleList
 
 Get a list of entry identifiers and associated names
 
 # Arguments
 - `dbentries::Vector{String}`: The list of entries to list.
+- `request_delay::Real`: Seconds to wait between batched requests. Defaults to
+  0.4. No delay occurs when the input fits in one request.
+- `timeout::Real`: Deprecated alias for `request_delay`. If both keywords are
+  supplied, their values must be equal.
+
+# Throws
+- `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
+  and `timeout` conflict.
 
 # Returns
 - `data::KeggTupleList`: A data structure containing the `url`, the `data` retrieved,
@@ -60,10 +68,10 @@ Get a list of entry identifiers and associated names
 
 # Extended help
 
-The input is limited up to 10 entries; if more are provided the query will be
-split into chunks of 10 entries and multiple requests will be made with a `timeout`
-between each request (KEGG API indicates that the maximum API calls per seconds
-is 3, so a default timeout of 0.4 seconds is set to ensure that).
+The input is limited to 10 entries per request. Larger inputs are split into
+batches, with `request_delay` seconds between requests and no wait after the
+final request. The default of 0.4 seconds keeps batched calls below KEGG's limit
+of three requests per second.
 """
 function kegg_list(
         dbentries::Vector{String}; request_delay::Union{Nothing, Real} = nothing,

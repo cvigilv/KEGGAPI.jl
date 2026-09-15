@@ -11,9 +11,9 @@ Convert KEGG identifiers to/from outside identifiers.
 ```julia
 using KEGGAPI
 
-KEGGAPI.conv("eco", "ncbi-geneid")
-KEGGAPI.conv("ncbi-geneid", "eco")
-KEGGAPI.conv("genes", "ncbi-geneid:948364")
+KEGGAPI.kegg_conv("eco", "ncbi-geneid")
+KEGGAPI.kegg_conv("ncbi-geneid", "eco")
+KEGGAPI.kegg_conv("genes", "ncbi-geneid:948364")
 ```
 
 # Extended help
@@ -37,7 +37,7 @@ end
 
 
 """
-    kegg_conv(target_db::String, dbentries::Vector{String}; [timeout::Float64 = 0.4])
+    kegg_conv(target_db::String, dbentries::Vector{String}; request_delay::Real = 0.4, timeout = nothing)
 
 Convert KEGG identifiers to/from outside identifiers.
 
@@ -55,13 +55,20 @@ For chemical substance identifiers:
 # Arguments
 - `target_db::String`: Target database
 - `dbentries::Vector{String}`: Database entries of the available databases
-- `timeout::Float64`: Time to wait between requests (default: 0.4 seconds)
+- `request_delay::Real`: Seconds to wait between batched requests. Defaults to
+  0.4. No delay occurs when the input fits in one request.
+- `timeout::Real`: Deprecated alias for `request_delay`. If both keywords are
+  supplied, their values must be equal.
+
+# Throws
+- `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
+  and `timeout` conflict.
 
 # Examples
 ```julia
 using KEGGAPI
 
-KEGGAPI.conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
+KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
 ```
 """
 function kegg_conv(

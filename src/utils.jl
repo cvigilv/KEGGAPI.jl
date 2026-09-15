@@ -8,7 +8,7 @@ function resolve_request_delay(
     )
     for delay in (request_delay, timeout)
         if !isnothing(delay) && (!isfinite(delay) || delay < 0)
-            throw(ArgumentError("request_delay must be finite and nonnegative"))
+            throw(ArgumentError("request delays must be finite and nonnegative"))
         end
     end
 
@@ -22,7 +22,7 @@ function resolve_request_delay(
 
     delay = something(request_delay, timeout, DEFAULT_REQUEST_DELAY)
     if request_count > 1 && delay < KEGG_REQUEST_INTERVAL
-        @warn "KEGG allows at most three requests per second. A request_delay below $(KEGG_REQUEST_INTERVAL) seconds may cause rate-limit errors."
+        @warn "KEGG allows at most three requests per second. A request_delay below one third of a second may cause rate-limit errors."
     end
     return delay
 end

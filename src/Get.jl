@@ -67,8 +67,8 @@ end
 
 # ---------------------------------------------------------------------------- Main function
 """
-    kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; timeout::Float64 = 0.4)
-    kegg_get(dbentry::String, args...; kwargs...)
+    kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing)
+    kegg_get(dbentry::String, option::Union{Symbol, Nothing} = nothing; request_delay::Real = 0.4, timeout = nothing)
 
 Retrieve given database entries.
 
@@ -89,8 +89,14 @@ Allowed `option` for retrieval of selected fields:
 - `dbentries::Vector{String}`: A vector of KEGG database entries to retrieve.
 - `option::Union{Symbol, Nothing}`: An optional symbol specifying the format of the
   retrieved data. If `nothing`, the default format is used.
-- `timeout::Float64`: A float specifying the time to wait between API requests when retrieving
-  more than 10 entries. Default is 0.4 seconds.
+- `request_delay::Real`: Seconds to wait between batched requests. Defaults to
+  0.4. No delay occurs when the input fits in one request.
+- `timeout::Real`: Deprecated alias for `request_delay`. If both keywords are
+  supplied, their values must be equal.
+
+# Throws
+- `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
+  and `timeout` conflict.
 
 # Returns
 A tuple containing:
@@ -110,9 +116,10 @@ urls, data = kegg_get(dbentries, option)
 This operation retrieves given database entries in a flat file format or in other
 formats with `option`. Flat file formats are available for all KEGG databases
 except brite. The input is limited up to 10 entries; if more are provided the
-query will be split into chunks of 10 entries and multiple requests will be made
-with a `timeout` between each request (KEGG API indicates that the maximum API
-calls per seconds is 3, so a default timeout of 0.4 seconds is set to ensure that).
+query is split into chunks of 10 entries. The function waits `request_delay`
+seconds between requests, but does not wait after the final request. The default
+of 0.4 seconds keeps batched calls below KEGG's limit of three requests per
+second.
 
 Options allow retrieval of selected fields, including sequence data from genes
 entries, chemical structure data or GIF image files from compound, glycan and
