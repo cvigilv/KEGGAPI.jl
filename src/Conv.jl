@@ -67,7 +67,7 @@ KEGGAPI.conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
 function kegg_conv(target_db::String, dbentries::Vector{String}; timeout::Float64 = 0.4)
     urls = String[]
     data = []
-    for chunk in chunk_vector(dbentries, 10)
+    for chunk in partition(dbentries, 10)
         url = "https://rest.kegg.jp/conv/$(target_db)/$(join(chunk, "+"))"
         push!(urls, url)
         response_text = request(url)

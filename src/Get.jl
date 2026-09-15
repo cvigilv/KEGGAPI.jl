@@ -19,7 +19,7 @@ const KEGGAPI_GET_BINARY_OPTIONS = (:image, :image2x)
 validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
 
 # ---------------------------------------------------------------------------- Helpers
-function build_kegg_url(chunk::Vector{String}, option::Union{Symbol, Nothing})
+function build_kegg_url(chunk::AbstractVector{String}, option::Union{Symbol, Nothing})
     chunk_query = join(chunk, "+")
     option_str = isnothing(option) ? "" : "/$option"
     return "https://rest.kegg.jp/get/$chunk_query$option_str"
@@ -137,7 +137,7 @@ function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = no
     data = []
     processor = get_response_processor(option)
 
-    for chunk in chunk_vector(dbentries, 10)
+    for chunk in partition(dbentries, 10)
         url = build_kegg_url(chunk, option)
         push!(urls, url)
         response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? request_other(url) : request(url)

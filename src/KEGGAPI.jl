@@ -1,8 +1,8 @@
 module KEGGAPI
 
 import HTTP: get
+import .Iterators: partition
 
-include("utils.jl")
 include("Conv.jl")
 include("Ddi.jl")
 include("Find.jl")
@@ -21,13 +21,6 @@ export @kegg_str,
     kegg_get,
     kegg_info,
     kegg_link,
-    kegg_list,
-    request
-
-
-precompile(request, (String,))
-precompile(request_other, (String,))
-precompile(kegg_get, (Vector,))
-precompile(kegg_ddi, (Vector,))
+    kegg_list
 
 end
