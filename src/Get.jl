@@ -127,23 +127,35 @@ and to **one pathway entry with the `:image`, `:image2x` or `:kgml` option**.
 - https://www.kegg.jp/kegg/rest/keggapi.html#get
 
 """
-function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing; timeout::Float64 = 0.4)
+function kegg_get(
+        dbentries::Vector{String}, option::Union{Symbol, Nothing} = nothing;
+        request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    )
+    return _kegg_get(dbentries, option, request, sleep; request_delay, timeout)
+end
+
+function _kegg_get(
+        dbentries::Vector{String}, option::Union{Symbol, Nothing}, requester::F,
+        sleep_function::S; request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    ) where {F, S}
     validate_get_option(option)
-    timeout < 0.334 && @warn "KEGG API accepts 3 requests per second. Current timeout may lead to API rate limit errors."
+    request_count = cld(length(dbentries), KEGG_BATCH_SIZE)
+    delay = resolve_request_delay(request_delay, timeout, :kegg_get, request_count)
     length(dbentries) > 1 && option == :image && @warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry"
 
     urls = String[]
     data = []
     processor = get_response_processor(option)
 
-    for chunk in partition(dbentries, 10)
+    foreach_request_batch(dbentries, delay, sleep_function) do chunk
         url = build_kegg_url(chunk, option)
         push!(urls, url)
-        response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? request(url, Vector{UInt8}) : request(url)
+        response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? requester(url, Vector{UInt8}) : requester(url)
         for datum in processor(response_text)
             push!(data, datum)
         end
-        sleep(timeout)
     end
 
     return (url = urls, data = data)

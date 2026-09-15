@@ -65,15 +65,27 @@ split into chunks of 10 entries and multiple requests will be made with a `timeo
 between each request (KEGG API indicates that the maximum API calls per seconds
 is 3, so a default timeout of 0.4 seconds is set to ensure that).
 """
-function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
+function kegg_list(
+        dbentries::Vector{String}; request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    )
+    return _kegg_list(dbentries, request, sleep; request_delay, timeout)
+end
+
+function _kegg_list(
+        dbentries::Vector{String}, requester::F, sleep_function::S;
+        request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    ) where {F, S}
+    request_count = cld(length(dbentries), KEGG_BATCH_SIZE)
+    delay = resolve_request_delay(request_delay, timeout, :kegg_list, request_count)
     urls = String[]
     data = []
-    for chunk in partition(dbentries, 10)
+    foreach_request_batch(dbentries, delay, sleep_function) do chunk
         url = "https://rest.kegg.jp/list/$(join(chunk, "+"))"
         push!(urls, url)
-        response_text = request(url)
+        response_text = requester(url)
         append!(data, list_parser(response_text, url).data)
-        sleep(timeout)
     end
     colnames = inferred_list_colnames(data)
     return KeggTupleList(urls, colnames, data)

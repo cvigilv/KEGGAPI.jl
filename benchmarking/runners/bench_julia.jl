@@ -1,17 +1,13 @@
 # Julia runner: times KEGGAPI.jl calls and prints one CSV row per replicate.
 # Usage: julia --project=. runners/bench_julia.jl <nreps> <sleep_seconds>
 using KEGGAPI
-using Logging
 
 const NREPS = length(ARGS) >= 1 ? parse(Int, ARGS[1]) : 5
 const PAUSE = length(ARGS) >= 2 ? parse(Float64, ARGS[2]) : 0.4
 
-# The chunked `kegg_get` methods sleep internally to respect KEGG's rate limit.
-# This runner already spaces its own calls, so that sleep is disabled here to
-# measure the actual request/parse work; the resulting @warn is silenced.
-get_entry(args...) = with_logger(NullLogger()) do
-    KEGGAPI.kegg_get(args...; timeout = 0.0)
-end
+# This runner already spaces its calls, so disable the internal batching delay
+# to measure request and parsing work only.
+get_entry(args...) = KEGGAPI.kegg_get(args...; request_delay = 0.0)
 
 # (label, thunk) pairs -- keep in sync with the other runners.
 const CASES = [
