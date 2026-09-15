@@ -53,7 +53,7 @@ function kegg_link(target_db::String, source_db::String, option::String = "")
 end
 
 """
-    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; [timeout::Float64 = 0.4])
+    kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; request_delay::Real = 0.4, timeout = nothing)
 
 Find related entries by using database cross-references.
 
@@ -76,7 +76,17 @@ and the available external databases are:
   (`species | genus | family | order | class | phylum`) for `genome`/`taxonomy`
   links, or an RDF output format (`turtle | n-triple`) for the `drug`/`atc`/`jtc`
   databases (in which case the raw response text is returned).
-- `timeout::Float64`, time to wait between requests (default: 0.4 seconds)
+- `request_delay::Real`, seconds to wait between batched requests. Defaults to
+  0.4. No delay occurs when the input fits in one request.
+- `timeout::Real`, deprecated alias for `request_delay`. If both keywords are
+  supplied, their values must be equal.
+
+# Throws
+- `ArgumentError`: If a delay is negative or non-finite, or if `request_delay`
+  and `timeout` conflict.
+
+The vector form sends at most 10 entries per request. It waits `request_delay`
+seconds between requests, but does not wait after the final request.
 """
 function kegg_link(
         target_db::String, dbentries::Vector{String}, option::String = "";

@@ -45,6 +45,17 @@ result.colnames    # column names
 result.data        # retrieved data
 ```
 
+The vector forms of `kegg_conv`, `kegg_get`, `kegg_link`, and `kegg_list` send
+at most 10 entries per request. Set `request_delay` to control the pause between
+requests:
+
+```julia
+entries = ["hsa:$id" for id in 10458:10468]
+result = kegg_get(entries; request_delay = 0.5)
+```
+
+The old `timeout` keyword remains available as a deprecated alias.
+
 ## Documentation
 
 - [Getting started](https://cvigilv.github.io/KEGGAPI.jl/dev/man/getting-started/)

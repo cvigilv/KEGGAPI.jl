@@ -19,9 +19,9 @@ have no bar for it in the figure. The `conv` case uses `ncbi-geneid` rather than
 `ncbi-proteinid` because Bio.KEGG.REST only recognises the legacy outside-database
 names (`ncbi-gi | ncbi-geneid | uniprot`) and rejects the newer ones.
 
-`KEGGAPI.jl`'s chunked `kegg_get` sleeps internally to respect KEGG's rate limit;
-the Julia runner passes `timeout = 0.0` so that deliberate delay is not counted
-as work, since the runner already spaces its own calls.
+`KEGGAPI.jl`'s chunked `kegg_get` waits between requests to respect KEGG's rate
+limit. The Julia runner passes `request_delay = 0.0` because the runner already
+spaces its own calls and should not include that delay in its timings.
 
 Each interface runs every operation inside a **single** process, so what is
 measured is per-call time rather than interpreter startup. A warm-up call is
