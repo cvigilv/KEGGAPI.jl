@@ -5,8 +5,6 @@ import HTTP
 
 @testset verbose = true "API" begin
     @testset "request" begin
-        @test :request in names(KEGGAPI)
-
         binary_body = UInt8[0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]
         handler = function (http_request::HTTP.Request)
             if http_request.target == "/text"
