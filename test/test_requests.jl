@@ -123,6 +123,32 @@ using Test
     end
 
     @testset "ddi" begin
+        @testset "vector request limits" begin
+            dbentries = ["D$(lpad(string(i), 5, '0'))" for i in 1:10]
+            requested_urls = String[]
+            mock_request = function (url::String)
+                push!(requested_urls, url)
+                return "dr:D00001\tdr:D00010\tP\tmock interaction\n"
+            end
+
+            r = KEGGAPI._kegg_ddi(dbentries, mock_request)
+            expected_url = "https://rest.kegg.jp/ddi/$(join(dbentries, "+"))"
+            @test requested_urls == [expected_url]
+            @test r.url == [expected_url]
+            @test r.data[1] == ["dr:D00001"]
+            @test r.data[2] == ["dr:D00010"]
+
+            @test_throws ArgumentError KEGGAPI.kegg_ddi(String[])
+
+            request_count = Ref(0)
+            counting_request = function (url::String)
+                request_count[] += 1
+                return ""
+            end
+            @test_throws ArgumentError KEGGAPI._kegg_ddi(String[], counting_request)
+            @test request_count[] == 0
+        end
+
         r = KEGGAPI.kegg_ddi("D00564")
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) == 4

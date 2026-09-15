@@ -1,6 +1,6 @@
 """
     kegg_ddi(dbentry::String)
-    kegg_ddi(dbentries::Vector{String}; [timeout::Float64 = 0.4])
+    kegg_ddi(dbentries::Vector{String})
 
 Find adverse drug-drug interactions (DDI).
 
@@ -11,14 +11,15 @@ The available databases are:
 # Arguments
 - `dbentry::String` / `dbentries::Vector{String}`: KEGG DRUG (`dr:`/`D` numbers),
   NDC or YJ code entries to query for interactions.
-- `timeout::Float64`: Time to wait between requests when more than 10 entries are
-  provided (default: 0.4 seconds).
 
 # Returns
 - `data::KeggTupleList`: A data structure containing the `url`, the `data`
   retrieved, and the `colnames`. The columns are `["Entry 1", "Entry 2",
   "Interaction Type", "Mechanism"]`, where the interaction type is `CI`
   (contraindication) or `P` (precaution).
+
+# Throws
+- `ArgumentError`: If `dbentries` is empty
 
 # Examples
 ```julia
@@ -32,26 +33,25 @@ KEGGAPI.kegg_ddi(["D00564", "D00100"])
 
 This operation searches against the KEGG DDI database, which contains known
 adverse drug-drug interactions. When multiple entries are given, all pairwise
-interactions among them are also reported. The input is limited up to 10 entries;
-if more are provided the query will be split into chunks of 10 entries and
-multiple requests will be made with a `timeout` between each request (KEGG API
-indicates that the maximum API calls per second is 3, so a default timeout of
-0.4 seconds is set to ensure that).
+interactions among them are also reported. Vector inputs must contain between one
+and ten entries. Empty vectors and vectors with more than ten entries throw an
+`ArgumentError` before a request is sent. Queries above the KEGG limit cannot be
+split into independent requests because doing so would omit interactions between
+entries in different requests.
 
 # Reference
 
 - https://www.kegg.jp/kegg/rest/keggapi.html#ddi
 """
-function kegg_ddi(dbentries::Vector{String}; timeout::Float64 = 0.4)
-    urls = String[]
-    response_text = ""
-    for chunk in chunk_vector(dbentries, 10)
-        url = "https://rest.kegg.jp/ddi/$(join(chunk, "+"))"
-        push!(urls, url)
-        response_text *= request(url)
-        sleep(timeout)
-    end
-    return ddi_parser(response_text, urls)
+function kegg_ddi(dbentries::Vector{String})
+    return _kegg_ddi(dbentries, request)
+end
+
+function _kegg_ddi(dbentries::Vector{String}, requester::F) where {F}
+    isempty(dbentries) && throw(ArgumentError("kegg_ddi requires at least one entry"))
+    url = "https://rest.kegg.jp/ddi/$(join(dbentries, "+"))"
+    response_text = requester(url)
+    return ddi_parser(response_text, [url])
 end
 
 function kegg_ddi(dbentry::String)
