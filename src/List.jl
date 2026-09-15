@@ -1,10 +1,5 @@
-using HTTP
-
 """
-    kegg_list(database::String)
-    kegg_list(pathway::String, org::String)
-    kegg_list(brite::String, option::String)
-    kegg_list(genome::String, option::String)
+    kegg_list(query::String, query_type::String = "") -> Union{KeggTupleList, KeggGenesList}
 
 Get a list of entry identifiers and associated names
 
@@ -18,9 +13,9 @@ drug     | dgroup
 
 # Returns
 
-- `data::Vector{Tuple{String, String}}`: A vector of tuples containing the entry
-  identifiers and associated names for the specified database. If the data is
-  not available, an empty vector is returned.
+- `KeggTupleList`: Rows from a two-column response, a response with an
+  unrecognized width, or an empty response.
+- `KeggGenesList`: The four columns in an organism-specific gene response.
 
 # Extended help
 
@@ -29,13 +24,11 @@ database names shown in the tables above, excluding the composite database names
 of genes and kegg, may be given. To obtain a list of KEGG organisms with their
 three- or four-letter organism codes, use the `genome` database.
 
-When the organism code is known, the second form can be used to obtain a list of
-organism-specific pathways.
-
-The third form is a similar option for brite hierarchies (`br | jp | ko | <org>`).
-
-The fourth form lists the genomes for a KEGG organism group name or a taxonomy
-`<rank_id>` (phylum, class, order, family, genus or species).
+The optional `query_type` becomes the second URL segment. For pathway queries,
+pass an organism code to list organism-specific pathways. For BRITE queries,
+pass `"br"`, `"jp"`, `"ko"`, or an organism code. For genome queries, pass an
+organism group name or taxonomy `<rank_id>` such as a phylum, class, order,
+family, genus, or species identifier.
 
 # References
 
@@ -43,36 +36,18 @@ The fourth form lists the genomes for a KEGG organism group name or a taxonomy
 ```
 """
 function kegg_list(query::String, query_type::String = "")
+    return _kegg_list(query, query_type, request)
+end
+
+function _kegg_list(query::String, query_type::String, request_function::F) where {F}
     url = "https://rest.kegg.jp/list/$query"
-
-    # Check request type
-    if query_type == "genes"
-        response_text = KEGGAPI.request(url)
-        result = genomic_feature_parser(response_text, url)
-    else
-        data = []
-        url *= "/$query_type"
-        HTTP.open(:GET, url) do stream
-            while !eof(stream)
-                chunk = readavailable(stream) |> String
-                for line in eachline(IOBuffer(chunk))
-                    push!(data, split(line, '\t') .|> String)
-                end
-            end
-        end
-        result = KeggTupleList(
-            url,
-            ["ID"; repeat([missing], length(data[1]) - 1)],
-            data
-        )
-    end
-
-    # Return the parsed data or an empty array if the data is not available.
-    return result
+    isempty(query_type) || (url *= "/$query_type")
+    response_text = request_function(url)
+    return list_parser(response_text, url)
 end
 
 """
-    kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
+    kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4) -> KeggTupleList
 
 Get a list of entry identifiers and associated names
 
@@ -97,12 +72,9 @@ function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
         url = "https://rest.kegg.jp/list/$(join(chunk, "+"))"
         push!(urls, url)
         response_text = request(url)
-        for datum in eachline(IOBuffer(response_text))
-            id, d = split(datum, '\t') .|> String
-            push!(data, [id, d])
-        end
+        append!(data, list_parser(response_text, url).data)
         sleep(timeout)
     end
-    colnames = isempty(data) ? Union{String, Missing}[] : Union{String, Missing}["ID"; fill(missing, length(first(data)) - 1)]
+    colnames = inferred_list_colnames(data)
     return KeggTupleList(urls, colnames, data)
 end

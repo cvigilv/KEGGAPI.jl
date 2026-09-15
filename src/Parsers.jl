@@ -1,3 +1,23 @@
+function inferred_list_colnames(data::Vector{Any})
+    isempty(data) && return Union{String, Missing}[]
+    column_count = maximum(length, data)
+    return Union{String, Missing}["ID"; fill(missing, column_count - 1)]
+end
+
+function list_parser(response_text::String, url::String)
+    data = Any[]
+    for line in eachline(IOBuffer(response_text))
+        isempty(strip(line)) && continue
+        push!(data, split(line, '\t') .|> String)
+    end
+
+    column_count = isempty(data) ? 0 : maximum(length, data)
+    if column_count == 4 && all(row -> length(row) == column_count, data)
+        return genomic_feature_parser(response_text, url)
+    end
+    return KeggTupleList(url, inferred_list_colnames(data), data)
+end
+
 function tuple_parser(response_text::String, url::String, colnames::Vector{String} = ["ID", "Details"])
     # Split the response into lines
     lines = split(response_text, "\n")
