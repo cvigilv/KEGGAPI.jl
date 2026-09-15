@@ -35,4 +35,12 @@ result.colnames
 result.data
 ```
 
+## Error handling
+
+KEGGAPI lets HTTP.jl exceptions propagate. An unsuccessful HTTP response throws
+`HTTP.Exceptions.StatusError`. Connection, request, and timeout failures throw
+`HTTP.Exceptions.ConnectError`, `HTTP.Exceptions.RequestError`, and
+`HTTP.Exceptions.TimeoutError`, respectively. See [`KEGGAPI.request`](@ref) for
+the low-level request contract.
+
 For more example usage, refer to the [examples](examples.md) page and the [API reference](api.md).

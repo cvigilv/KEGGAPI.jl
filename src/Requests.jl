@@ -16,9 +16,11 @@ throw `HTTP.Exceptions.StatusError`. The HTTP exceptions retain the underlying
 error or response in their fields.
 
 # Examples
+`request` is not exported, so call it with the `KEGGAPI` module prefix.
+
 ```julia
-text = request("https://rest.kegg.jp/info/kegg")
-image = request("https://rest.kegg.jp/get/hsa00010/image", Vector{UInt8})
+text = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
+image = KEGGAPI.request("https://rest.kegg.jp/get/hsa00010/image", Vector{UInt8})
 ```
 
 # Arguments
