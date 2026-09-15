@@ -12,8 +12,7 @@ const KEGGAPI_GET_OPTIONS = Union{Symbol, Nothing}[
     nothing,
 ]
 
-# Options whose response body is binary (image files) and must be fetched with
-# `request_other` rather than decoded as text.
+# Options whose response body is binary (image files)
 const KEGGAPI_GET_BINARY_OPTIONS = (:image, :image2x)
 
 validate_get_option(option) = option in KEGGAPI_GET_OPTIONS || throw(ArgumentError("Invalid option. Valid options are: $(KEGGAPI_GET_OPTIONS)"))
@@ -140,7 +139,7 @@ function kegg_get(dbentries::Vector{String}, option::Union{Symbol, Nothing} = no
     for chunk in partition(dbentries, 10)
         url = build_kegg_url(chunk, option)
         push!(urls, url)
-        response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? request_other(url) : request(url)
+        response_text = option in KEGGAPI_GET_BINARY_OPTIONS ? request(url, Vector{UInt8}) : request(url)
         for datum in processor(response_text)
             push!(data, datum)
         end

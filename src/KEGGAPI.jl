@@ -15,6 +15,7 @@ include("Requests.jl")
 include("Structures.jl")
 
 export @kegg_str,
+    RequestError,
     kegg_conv,
     kegg_ddi,
     kegg_find,

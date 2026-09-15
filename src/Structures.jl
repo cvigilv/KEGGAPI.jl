@@ -1,9 +1,20 @@
 ## File to hold the types of the KEGG API
 
-# This type is used to represent a KEGG API request error.
+"""
+    RequestError(message::String)
+
+An error raised when a KEGG API request cannot be completed or returns a
+non-successful HTTP status.
+
+For transport, DNS, and TLS failures raised by [`request`](@ref), inspect
+`Base.current_exceptions()` inside a `catch` block to access the original
+exception.
+"""
 struct RequestError <: Exception
     message::String
 end
+
+Base.showerror(io::IO, exception::RequestError) = print(io, exception.message)
 
 mutable struct KeggTupleList
     url::Union{String, Vector{String}}

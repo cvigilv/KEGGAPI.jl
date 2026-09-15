@@ -1,25 +1,65 @@
 using KEGGAPI
 using Test
 
+import HTTP
+
 @testset verbose = true "API" begin
     @testset "request" begin
-        # Test successful request to known working endpoint
+        @test :request in names(KEGGAPI)
+        @test :RequestError in names(KEGGAPI)
+
+        binary_body = UInt8[0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]
+        handler = function (http_request::HTTP.Request)
+            if http_request.target == "/text"
+                return HTTP.Response(200, "fixture response")
+            elseif http_request.target == "/binary"
+                return HTTP.Response(200, binary_body)
+            elseif http_request.target == "/empty"
+                return HTTP.Response(204)
+            end
+
+            return HTTP.Response(503, "fixture unavailable")
+        end
+
+        server = HTTP.serve!(handler; listenany = true, verbose = -1)
+        base_url = "http://127.0.0.1:$(HTTP.port(server))"
+        try
+            @test KEGGAPI.request("$base_url/text") == "fixture response"
+            @test KEGGAPI.request("$base_url/binary", Vector{UInt8}) == binary_body
+            @test KEGGAPI.request("$base_url/empty") == ""
+
+            for response_type in (String, Vector{UInt8})
+                status_error = try
+                    KEGGAPI.request("$base_url/unavailable", response_type)
+                catch exception
+                    exception
+                end
+                @test status_error isa KEGGAPI.RequestError
+                @test occursin("status code 503", status_error.message)
+            end
+        finally
+            close(server)
+        end
+
+        transport_error = try
+            KEGGAPI.request("$base_url/text")
+        catch exception
+            exception_stack = Base.current_exceptions()
+            @test exception_stack[end].exception === exception
+            @test any(
+                entry -> entry.exception isa HTTP.Exceptions.ConnectError,
+                exception_stack[begin:(end - 1)]
+            )
+            exception
+        end
+        @test transport_error isa KEGGAPI.RequestError
+        @test occursin("Request to $base_url/text failed", transport_error.message)
+
+        # Keep one live request to check compatibility with the KEGG service.
         result = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
-        @test isa(result, String)
+        @test result isa String
         @test !isempty(result)
-        @test contains(lowercase(result), "kegg")  # Basic content validation (case insensitive)
-
-        # Test another known endpoint
-        result2 = KEGGAPI.request("https://rest.kegg.jp/list/pathway/hsa/01100+00230")
-        @test isa(result2, String)
-
-        # Test error handling for invalid endpoint
-        @test_throws KEGGAPI.RequestError KEGGAPI.request("https://rest.kegg.jp/invalid/endpoint")
-
-        # Test request_other function for binary data
-        image_data = KEGGAPI.request_other("https://rest.kegg.jp/get/hsa00010/image")
-        @test isa(image_data, Vector)
-        @test length(image_data) > 0
+        @test contains(lowercase(result), "kegg")
         sleep(0.4)
     end
 
