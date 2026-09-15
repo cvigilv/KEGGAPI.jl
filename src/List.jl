@@ -52,23 +52,19 @@ function kegg_list(query::String, query_type::String = "")
     else
         data = []
         url *= "/$query_type"
-        try
-            HTTP.open(:GET, url) do stream
-                while !eof(stream)
-                    chunk = readavailable(stream) |> String
-                    for line in eachline(IOBuffer(chunk))
-                        push!(data, split(line, '\t') .|> String)
-                    end
+        HTTP.open(:GET, url) do stream
+            while !eof(stream)
+                chunk = readavailable(stream) |> String
+                for line in eachline(IOBuffer(chunk))
+                    push!(data, split(line, '\t') .|> String)
                 end
             end
-            result = KeggTupleList(
-                url,
-                ["ID"; repeat([missing], length(data[1]) - 1)],
-                data
-            )
-        catch e
-            throw(KEGGAPI.RequestError("Failed to retrieve data from KEGG API: $(e)"))
         end
+        result = KeggTupleList(
+            url,
+            ["ID"; repeat([missing], length(data[1]) - 1)],
+            data
+        )
     end
 
     # Return the parsed data or an empty array if the data is not available.
