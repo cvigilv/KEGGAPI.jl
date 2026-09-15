@@ -78,17 +78,31 @@ and the available external databases are:
   databases (in which case the raw response text is returned).
 - `timeout::Float64`, time to wait between requests (default: 0.4 seconds)
 """
-function kegg_link(target_db::String, dbentries::Vector{String}, option::String = ""; timeout::Float64 = 0.4)
+function kegg_link(
+        target_db::String, dbentries::Vector{String}, option::String = "";
+        request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    )
+    return _kegg_link(target_db, dbentries, option, request, sleep; request_delay, timeout)
+end
+
+function _kegg_link(
+        target_db::String, dbentries::Vector{String}, option::String, requester::F,
+        sleep_function::S; request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    ) where {F, S}
     option_str = isempty(option) ? "" : "/$option"
     is_rdf = option in KEGG_LINK_RDF_OPTIONS
+    request_count = cld(length(dbentries), KEGG_BATCH_SIZE)
+    delay = resolve_request_delay(request_delay, timeout, :kegg_link, request_count)
 
     urls = String[]
     data = []
     rdf_text = ""
-    for chunk in partition(dbentries, 10)
+    foreach_request_batch(dbentries, delay, sleep_function) do chunk
         url = "https://rest.kegg.jp/link/$(target_db)/$(join(chunk, "+"))$option_str"
         push!(urls, url)
-        response_text = request(url)
+        response_text = requester(url)
         if is_rdf
             rdf_text *= response_text
         else
@@ -97,7 +111,6 @@ function kegg_link(target_db::String, dbentries::Vector{String}, option::String 
                 push!(data, [id, d])
             end
         end
-        sleep(timeout)
     end
 
     is_rdf && return rdf_text

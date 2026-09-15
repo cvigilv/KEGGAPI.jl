@@ -64,18 +64,31 @@ using KEGGAPI
 KEGGAPI.conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
 ```
 """
-function kegg_conv(target_db::String, dbentries::Vector{String}; timeout::Float64 = 0.4)
+function kegg_conv(
+        target_db::String, dbentries::Vector{String};
+        request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    )
+    return _kegg_conv(target_db, dbentries, request, sleep; request_delay, timeout)
+end
+
+function _kegg_conv(
+        target_db::String, dbentries::Vector{String}, requester::F, sleep_function::S;
+        request_delay::Union{Nothing, Real} = nothing,
+        timeout::Union{Nothing, Real} = nothing,
+    ) where {F, S}
+    request_count = cld(length(dbentries), KEGG_BATCH_SIZE)
+    delay = resolve_request_delay(request_delay, timeout, :kegg_conv, request_count)
     urls = String[]
     data = []
-    for chunk in partition(dbentries, 10)
+    foreach_request_batch(dbentries, delay, sleep_function) do chunk
         url = "https://rest.kegg.jp/conv/$(target_db)/$(join(chunk, "+"))"
         push!(urls, url)
-        response_text = request(url)
+        response_text = requester(url)
         for datum in eachline(IOBuffer(response_text))
             id, d = split(datum, '\t') .|> String
             push!(data, [id, d])
         end
-        sleep(timeout)
     end
     return KeggTupleList(urls, ["source", target_db], data)
 end

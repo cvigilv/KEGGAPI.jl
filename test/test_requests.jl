@@ -254,7 +254,7 @@ import HTTP
         @test isa(r.data, Vector)
         sleep(0.4)
         @test_warn "Using the :image option with kegg_get is limited to one compound/glycan/drug entry" KEGGAPI.kegg_get(["map00010", "map01110"], :image)
-        @test_warn "KEGG API accepts 3 requests per second. Current timeout may lead to API rate limit errors." KEGGAPI.kegg_get("map00010"; timeout = 0.1)
+        @test_logs KEGGAPI.kegg_get("map00010"; request_delay = 0.1)
 
         # Doubled-size reference-pathway image request
         r = KEGGAPI.kegg_get("map00010", :image2x)
