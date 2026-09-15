@@ -6,7 +6,6 @@ import HTTP
 @testset verbose = true "API" begin
     @testset "request" begin
         @test :request in names(KEGGAPI)
-        @test :RequestError in names(KEGGAPI)
 
         binary_body = UInt8[0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]
         handler = function (http_request::HTTP.Request)
@@ -34,8 +33,11 @@ import HTTP
                 catch exception
                     exception
                 end
-                @test status_error isa KEGGAPI.RequestError
-                @test occursin("status code 503", status_error.message)
+                @test status_error isa HTTP.Exceptions.StatusError
+                if status_error isa HTTP.Exceptions.StatusError
+                    @test status_error.status == 503
+                    @test String(status_error.response.body) == "fixture unavailable"
+                end
             end
         finally
             close(server)
@@ -44,16 +46,13 @@ import HTTP
         transport_error = try
             KEGGAPI.request("$base_url/text")
         catch exception
-            exception_stack = Base.current_exceptions()
-            @test exception_stack[end].exception === exception
-            @test any(
-                entry -> entry.exception isa HTTP.Exceptions.ConnectError,
-                exception_stack[begin:(end - 1)]
-            )
             exception
         end
-        @test transport_error isa KEGGAPI.RequestError
-        @test occursin("Request to $base_url/text failed", transport_error.message)
+        @test transport_error isa HTTP.Exceptions.ConnectError
+        if transport_error isa HTTP.Exceptions.ConnectError
+            @test transport_error.url == "$base_url/text"
+            @test transport_error.error isa Exception
+        end
 
         # Keep one live request to check compatibility with the KEGG service.
         result = KEGGAPI.request("https://rest.kegg.jp/info/kegg")
@@ -72,7 +71,7 @@ import HTTP
         @test contains(lowercase(r), "kegg")
 
         # Test that requesting info for an invalid database throws an error
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_info("fail")
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_info("fail")
 
         # Test that requesting info with a non-symbol argument throws a MethodError
         @test_throws MethodError KEGGAPI.kegg_info(:fail)
@@ -83,7 +82,7 @@ import HTTP
         kegg_pathways = KEGGAPI.kegg_list("pathway")
         @test isa(kegg_pathways, KEGGAPI.KeggTupleList)
         @test length(kegg_pathways.data) > 0
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_list("fail")
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_list("fail")
         sleep(0.4)
     end
 
@@ -126,16 +125,16 @@ import HTTP
         r = KEGGAPI.kegg_conv("eco", "ncbi-geneid")
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", "ncbi-geneid")
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_conv("fail", "ncbi-geneid")
         sleep(0.4)
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("eco", "fail")
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_conv("eco", "fail")
         sleep(0.4)
 
         r = KEGGAPI.kegg_conv("ncbi-proteinid", ["hsa:10458", "ece:Z5100"])
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("fail", ["hsa:10458", "ece:Z5100"])
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_conv("ncbi-proteinid", ["foo", "bar", "baz"])
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_conv("fail", ["hsa:10458", "ece:Z5100"])
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_conv("ncbi-proteinid", ["foo", "bar", "baz"])
         sleep(0.4)
     end
 
@@ -145,15 +144,15 @@ import HTTP
         @test length(r.data) > 0
         sleep(0.4)
 
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", "hsa"); sleep(0.4)
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_link("fail", "hsa"); sleep(0.4)
 
         r = KEGGAPI.kegg_link("pathway", ["hsa:10458", "ece:Z51000"])
         @test isa(r, KEGGAPI.KeggTupleList)
         @test length(r.data) > 0
         sleep(0.4)
 
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_link("pathway", ["foo", "bar", "baz"]); sleep(0.4)
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_link("fail", ["hsa:10458", "ece:Z5100"]); sleep(0.4)
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_link("pathway", ["foo", "bar", "baz"]); sleep(0.4)
 
         # RDF output option returns the raw response text instead of a KeggTupleList
         r = KEGGAPI.kegg_link("atc", "D00564", "turtle")
@@ -200,7 +199,7 @@ import HTTP
         @test length(r.data[1]) > 0
         sleep(0.4)
 
-        @test_throws KEGGAPI.RequestError KEGGAPI.kegg_ddi("fail")
+        @test_throws HTTP.Exceptions.StatusError KEGGAPI.kegg_ddi("fail")
         sleep(0.4)
     end
 
