@@ -85,7 +85,7 @@ function kegg_link(target_db::String, dbentries::Vector{String}, option::String 
     urls = String[]
     data = []
     rdf_text = ""
-    for chunk in chunk_vector(dbentries, 10)
+    for chunk in partition(dbentries, 10)
         url = "https://rest.kegg.jp/link/$(target_db)/$(join(chunk, "+"))$option_str"
         push!(urls, url)
         response_text = request(url)

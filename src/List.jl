@@ -97,7 +97,7 @@ is 3, so a default timeout of 0.4 seconds is set to ensure that).
 function kegg_list(dbentries::Vector{String}; timeout::Float64 = 0.4)
     urls = String[]
     data = []
-    for chunk in chunk_vector(dbentries, 10)
+    for chunk in partition(dbentries, 10)
         url = "https://rest.kegg.jp/list/$(join(chunk, "+"))"
         push!(urls, url)
         response_text = request(url)
