@@ -3,6 +3,7 @@ module KEGGAPI
 import HTTP: get
 import .Iterators: partition
 
+include("utils.jl")
 include("Conv.jl")
 include("Ddi.jl")
 include("Find.jl")
