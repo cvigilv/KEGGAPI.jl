@@ -33,10 +33,9 @@ true
 
 # Extended help
 
-This operation can be used to obtain a list of all entries in each database. The
-database names shown in the tables above, excluding the composite database names
-of genes and kegg, may be given. To obtain a list of KEGG organisms with their
-three- or four-letter organism codes, use the `genome` database.
+`kegg_list` returns entries from the requested database. It accepts the database
+names above except the composite databases `genes` and `kegg`. Use `genome` to
+list organisms and their three- or four-letter codes.
 
 The optional `query_type` becomes the second URL segment. For pathway queries,
 pass an organism code to list organism-specific pathways. For BRITE queries,

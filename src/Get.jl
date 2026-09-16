@@ -121,18 +121,16 @@ julia> (result.url isa String, result.data isa String)
 
 # Extended help
 
-This operation retrieves given database entries in a flat file format or in other
-formats with `option`. Flat file formats are available for all KEGG databases
-except brite. The input is limited up to 10 entries; if more are provided the
-query is split into chunks of 10 entries. The function waits `request_delay`
-seconds between requests, but does not wait after the final request. The default
-of 0.4 seconds keeps batched calls below KEGG's limit of three requests per
-second.
+`kegg_get` retrieves entries as KEGG flat files or in the format selected by
+`option`. Flat files are supported for every KEGG database except `brite`. Each
+request accepts at most 10 entries, so the function splits longer inputs into
+batches. It waits `request_delay` seconds between batches but not after the final
+request. The default of 0.4 seconds keeps batched calls below KEGG's limit of
+three requests per second.
 
-Options allow retrieval of selected fields, including sequence data from genes
-entries, chemical structure data or GIF image files from compound, glycan and
-drug entries, PNG image files or KGML files from pathway entries. The `:image2x`
-option retrieves the doubled-size PNG image of a reference pathway map.
+Use `option` to retrieve gene sequences, chemical structures, compound, glycan,
+or drug images, pathway images, or KGML files. The `:image2x` option retrieves a
+reference pathway map at double size.
 
 The input is limited to **one compound/glycan/drug entry with the `:image` option**,
 and to **one pathway entry with the `:image`, `:image2x` or `:kgml` option**.
@@ -184,10 +182,9 @@ end
 """
     @kegg_str -> NamedTuple
 
-Macro to retrieve a KEGG database entry flat file from a string. This is intended
-for interactive use in the REPL.
+Retrieve a KEGG flat-file entry with string-macro syntax in the REPL.
 
-See [`kegg_get`](@ref) for more details on allowed database entries.
+See [`kegg_get`](@ref) for accepted database entries.
 
 # Returns
 - `NamedTuple`: The same `(url = url, data = data)` result as scalar

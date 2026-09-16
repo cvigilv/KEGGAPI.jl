@@ -21,10 +21,10 @@ true
 
 # Extended help
 
-This operation can be used to convert entry identifiers (accession numbers) of outside databases
-to KEGG identifiers, and vice versa. The first form allows database to database mapping, while
-the second form allows conversion of a selected number of entries. The database name "genes" may
-be used only in the second form.
+Convert outside accession numbers to KEGG identifiers or KEGG identifiers to
+outside accession numbers. Pass database names for database-to-database mapping,
+or pass one or more entries to convert selected identifiers. The `genes`
+database is valid only when converting selected entries.
 
 ## References
 
@@ -57,7 +57,7 @@ For chemical substance identifiers:
 
 # Arguments
 - `target_db::String`: Target database
-- `dbentries::Vector{String}`: Database entries of the available databases
+- `dbentries::Vector{String}`: Entries to convert.
 - `request_delay::Real`: Seconds to wait between batched requests. Defaults to
   0.4. No delay occurs when the input fits in one request.
 - `timeout::Real`: Deprecated alias for `request_delay`. If both keywords are

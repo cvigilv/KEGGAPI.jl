@@ -1,7 +1,7 @@
 # Case 2: EC reaction information in KEGG
 
-Starting from an Enzyme Commission (EC) number, this walkthrough finds the
-associated KEGG reactions, their compounds, and the orthology group.
+This walkthrough uses an Enzyme Commission (EC) number to find KEGG reactions,
+their compounds, and the associated orthology group.
 
 ```@setup case2
 using KEGGAPI
@@ -21,9 +21,9 @@ DataFrame(rxns.data, rxns.colnames)
 
 ## 2. Reaction information
 
-The second column of `rxns.data` holds the reaction identifiers (`rn:R…`). Pass
-them to [`kegg_get`](@ref) to retrieve the full entries; `.data` is a vector with
-one flat-file `String` per reaction:
+The second column of `rxns.data` holds the reaction identifiers, such as
+`rn:R01206`. Pass them to [`kegg_get`](@ref) to retrieve the full entries. The
+`.data` field contains one flat-file `String` per reaction:
 
 ```@example case2
 info = KEGGAPI.kegg_get(rxns.data[2])

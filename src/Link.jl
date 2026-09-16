@@ -49,10 +49,9 @@ true
 
 # Extended help
 
-This operation allows retrieval of cross-references within all KEGG databases, as
-well as between KEGG databases and outside databases. It is useful for finding
-various relationships, such as relationships between genes and pathways. This form
-allows retrieval of database to database cross-references.
+`kegg_link` retrieves cross-references within KEGG and between KEGG and outside
+databases. Pass database names to retrieve all links between two databases, or
+pass entry identifiers to retrieve links for selected entries.
 """
 function kegg_link(target_db::String, source_db::String, option::String = "")
     option_str = isempty(option) ? "" : "/$option"
@@ -81,7 +80,7 @@ and the available external databases are:
 # Arguments
 
 - `target_db::String`, target database
-- `dbentries::Vector{String}`, KEGG database entries of the available databases
+- `dbentries::Vector{String}`, entries from the source database
 - `option::String`, optional refinement of the query. A taxonomic rank
   (`species | genus | family | order | class | phylum`) for `genome`/`taxonomy`
   links, or an RDF output format (`turtle | n-triple`) for the `drug`/`atc`/`jtc`

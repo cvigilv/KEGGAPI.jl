@@ -21,8 +21,8 @@ DataFrame(hits.data, hits.colnames)
 
 ## 2. Retrieve the compound entry
 
-The first column of `hits.data` holds the compound identifiers (`cpd:C…`). Fetch
-the full entry with [`kegg_get`](@ref):
+The first column of `hits.data` holds compound identifiers such as `cpd:C00461`.
+Fetch the full entry with [`kegg_get`](@ref):
 
 ```@example case3
 cpd = KEGGAPI.kegg_get("cpd:C00461")
@@ -48,8 +48,7 @@ bytes_written == length(img.data)
 
 ## 4. Reactions linked to the compound
 
-[`kegg_link`](@ref) returns one row for every reaction the compound takes part
-in:
+[`kegg_link`](@ref) returns the reactions that include the compound:
 
 ```@example case3
 rxns = KEGGAPI.kegg_link("reaction", "cpd:C00461")
@@ -59,8 +58,8 @@ DataFrame(rxns.data, rxns.colnames)
 
 ## 5. Reaction information
 
-Feed the reaction identifiers (the second column of `rxns.data`) back into
-`kegg_get` to retrieve their entries:
+Pass the reaction identifiers in the second column of `rxns.data` to `kegg_get`
+to retrieve their entries:
 
 ```@example case3
 info = KEGGAPI.kegg_get(rxns.data[2])

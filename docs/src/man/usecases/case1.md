@@ -1,8 +1,7 @@
 # Case 1: From a UniProt ID to KEGG information
 
-This walkthrough starts from a protein identifier in an outside database
-(UniProt / Swiss-Prot) and pulls together the corresponding KEGG gene, its
-sequences, orthology group, reactions and pathways.
+This walkthrough starts with a UniProt identifier and retrieves its KEGG gene,
+sequences, orthology group, reactions, and pathways.
 
 ```@setup case1
 using KEGGAPI
@@ -40,7 +39,7 @@ conv = KEGGAPI.kegg_conv("genes", entries)
 conv.url
 ```
 
-The reverse direction (KEGG → outside database) works the same way:
+To convert from KEGG to an outside database, reverse the target and source:
 
 ```@example case1
 conv = KEGGAPI.kegg_conv("ncbi-proteinid", "mtr:25493984")
@@ -111,9 +110,9 @@ ko_genes = KEGGAPI.kegg_link("genes", "K01183")
 first(DataFrame(ko_genes.data, ko_genes.colnames), 5)
 ```
 
-The second column of `ko_genes.data` is a vector of gene identifiers that can be
-fed straight back into `kegg_get(...; :aaseq)` or `:ntseq` to build, for example,
-a multiple-sequence-alignment input.
+The second column of `ko_genes.data` contains gene identifiers. Pass it to
+`kegg_get` with `:aaseq` or `:ntseq` to prepare input for a multiple sequence
+alignment.
 
 ## 6. Download a pathway map
 

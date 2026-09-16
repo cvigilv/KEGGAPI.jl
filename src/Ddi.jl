@@ -30,10 +30,9 @@ true
 
 # Extended help
 
-This operation searches against the KEGG DDI database, which contains known
-adverse drug-drug interactions. When multiple entries are given, all pairwise
-interactions among them are also reported. Vector inputs must contain between one
-and ten entries. Empty vectors and vectors with more than ten entries throw an
+The KEGG DDI database records known adverse drug-drug interactions. A query with
+multiple entries also returns pairwise interactions among those entries. Vector
+inputs must contain between one and ten entries. Empty vectors and vectors with more than ten entries throw an
 `ArgumentError` before a request is sent. Queries above the KEGG limit cannot be
 split into independent requests because doing so would omit interactions between
 entries in different requests.
