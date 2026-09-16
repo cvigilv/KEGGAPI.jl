@@ -3,10 +3,9 @@ CurrentModule = KEGGAPI
 ```
 # KEGGAPI.jl
 
-A Julia interface for the [KEGG API](https://www.kegg.jp/kegg/rest/keggapi.html).
-The interface allows the functional annotation of genes, identification of metabolic processes
-and pathways, the exploration of reaction/pathway prevalence at different taxonomic levels and
-the identification of orthologous proteins for further analysis.
+KEGGAPI.jl is a Julia client for the [KEGG REST API](https://www.kegg.jp/kegg/rest/keggapi.html).
+It retrieves KEGG entries, sequences, images, database links, identifier conversions, and
+drug-drug interactions.
 
 ## KEGG usage terms
 
@@ -18,8 +17,7 @@ non-academic use.
 KEGGAPI.jl's MIT license covers only the Julia client code. It does not grant any rights to KEGG
 data or services.
 
-KEGGAPI.jl aims to support all KEGG API endpoints provided by the
-["KEGGREST"](https://bioconductor.org/packages/release/bioc/html/KEGGREST.html) package for R
-(Tenenbaum and maintainers, 2025) and the
-["Bio.KEGG.REST"](https://biopython.org/docs/1.75/api/Bio.KEGG.REST.html) submodule from
-Biopython for Python.
+Its endpoint coverage follows
+[KEGGREST](https://bioconductor.org/packages/release/bioc/html/KEGGREST.html) for R
+(Tenenbaum and maintainers, 2025) and
+[Bio.KEGG.REST](https://biopython.org/docs/1.75/api/Bio.KEGG.REST.html) for Python.

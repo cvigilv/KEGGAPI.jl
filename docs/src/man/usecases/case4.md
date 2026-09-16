@@ -1,7 +1,7 @@
 # Case 4: Target molecule information at KEGG
 
-Starting from a target molecule name, this walkthrough finds the encoding gene
-and then explores its orthology group, pathways and associated drugs.
+This walkthrough searches for a target molecule's gene, then retrieves its
+orthology group, pathways, and associated drugs.
 
 ```@setup case4
 using KEGGAPI
@@ -11,8 +11,8 @@ using DataFrames
 ## 1. Find the gene for a target molecule
 
 [`kegg_find`](@ref) with the `genes` database searches gene names and
-descriptions. A popular target such as `CD19` matches many organisms, so we show
-only the first few hits:
+descriptions. `CD19` matches genes from many organisms, so this example shows
+only the first five hits:
 
 ```@example case4
 genes = KEGGAPI.kegg_find("genes", "CD19")
@@ -30,7 +30,7 @@ gene = KEGGAPI.kegg_get("hsa:930")
 println(join(first(split(gene.data, "\n"), 8), "\n"))
 ```
 
-Its orthology (KO) group via [`kegg_link`](@ref):
+Use [`kegg_link`](@ref) to retrieve its orthology (KO) group:
 
 ```@example case4
 ko = KEGGAPI.kegg_link("ko", "hsa:930")
@@ -54,8 +54,7 @@ drugs = KEGGAPI.kegg_link("drug", "hsa:930")
 DataFrame(drugs.data, drugs.colnames)
 ```
 
-Retrieve information on the associated drugs by passing their identifiers (the
-second column of `drugs.data`) to `kegg_get`:
+Pass the drug identifiers in the second column of `drugs.data` to `kegg_get`:
 
 ```@example case4
 drug_info = KEGGAPI.kegg_get(drugs.data[2])

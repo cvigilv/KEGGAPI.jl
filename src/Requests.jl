@@ -8,8 +8,8 @@ The default `T` is `String`. Pass `Vector{UInt8}` to return the response body as
 raw bytes, for example when requesting an image. Other response types must be
 constructible from a `Vector{UInt8}`.
 
-This function uses HTTP.jl's exception behavior. Connection failures, including
-DNS and TLS failures, throw `HTTP.Exceptions.ConnectError`. Failures while
+HTTP.jl exceptions pass through unchanged. Connection failures, including DNS
+and TLS failures, throw `HTTP.Exceptions.ConnectError`. Failures while
 sending a request or reading its response throw `HTTP.Exceptions.RequestError`,
 timeouts throw `HTTP.Exceptions.TimeoutError`, and unsuccessful HTTP responses
 throw `HTTP.Exceptions.StatusError`. The HTTP exceptions retain the underlying

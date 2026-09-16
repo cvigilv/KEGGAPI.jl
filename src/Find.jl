@@ -53,13 +53,12 @@ true
 
 # Extended help
 
-This operation searches KEGG databases for entries matching the given query. The
-`option` argument is only meaningful for chemical databases (`compound`, `drug`)
-and is used to search by molecular `formula`, `exact_mass` or `mol_weight`
-(ranges may be given with a minus sign, e.g. `"300-310"`); `nop` disables the
-keyword pre-processing. Any recognized KEGG database (or an organism code) is
-accepted; unrecognized database names emit a warning but are still passed through
-to the API.
+`kegg_find` searches a KEGG database for entries that match `query`. For
+`compound` and `drug`, use `option` to search by `formula`, `exact_mass`, or
+`mol_weight`. Specify a range with a hyphen, as in `"300-310"`. The `nop` option
+disables keyword preprocessing. The function accepts recognized KEGG databases
+and organism codes. It warns about other database names before passing them to
+the API.
 
 # Reference
 

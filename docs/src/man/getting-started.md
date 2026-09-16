@@ -2,8 +2,7 @@
 
 ## Installation
 
-KEGGAPI.jl can be installed using the Julia package manager.
-From the Julia REPL, type `]` to enter the Pkg REPL mode and run
+From the Julia REPL, type `]` to enter the Pkg REPL and install KEGGAPI.jl:
 
 ```
 pkg> add KEGGAPI
@@ -17,8 +16,8 @@ Load KEGGAPI.jl with `using`:
 using KEGGAPI
 ```
 
-Then call a wrapper for the KEGG operation you need. For example, list all
-organisms in KEGG:
+Each wrapper is named after its KEGG operation. This call lists all organisms in
+KEGG:
 
 ```@example examples
 result = KEGGAPI.kegg_list("genome")
@@ -26,8 +25,8 @@ result = KEGGAPI.kegg_list("genome")
 nothing # hide
 ```
 
-This returns a `KeggTupleList` containing the request URL, column names, and data.
-Access them through the corresponding fields:
+The result contains the request URL, column names, and data:
+
 ```@example examples
 result.url
 ```
@@ -48,4 +47,4 @@ KEGGAPI lets HTTP.jl exceptions propagate. An unsuccessful HTTP response throws
 `HTTP.Exceptions.TimeoutError`, respectively. See [`KEGGAPI.request`](@ref) for
 the low-level request contract.
 
-For more example usage, refer to the [examples](examples.md) page and the [API reference](api.md).
+See [Examples](examples.md) for more calls and [API reference](api.md) for the full interface.

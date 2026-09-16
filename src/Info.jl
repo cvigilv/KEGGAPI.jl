@@ -29,9 +29,9 @@ true
 
 # Extended help
 
-This operation displays database release information and statistics. Except for
-`kegg`, `genes`, and `ligand`, it also returns the linked databases accepted by
-[`kegg_link`](@ref).
+`kegg_info` returns database release information and statistics. For databases
+other than `kegg`, `genes`, and `ligand`, the response also lists databases that
+can be passed to [`kegg_link`](@ref).
 
 # Reference
 
